@@ -7,7 +7,7 @@ import java.util.List;
 import data.enums.ActionCodes;
 
 /**
- * Protocol is a data class containing all data in order to create strings that will be send to the server.<p>
+ * Protocol is a data class containing all data in order to create strings that will be send to the client.<p>
  * A protocol string is composed like this : <p>
  * {@code <Action code><option 1><option 2>...<option n>}<p>
  * The number of options will vary depending of the action code 
@@ -29,6 +29,11 @@ public class Protocol {
 		this.actionCode = actionCode;
 	}
 	
+	public Protocol(ActionCodes actionCode, List<String> args) {
+		this.actionCode = actionCode;
+		options = args;
+	}
+
 	public ActionCodes getActionCode() {
 		return actionCode;
 	}
@@ -63,7 +68,8 @@ public class Protocol {
 	public String toString() {
 		//create StringBuilder to ensure good performance, even if there is many Strings to append
 		//add the action code at the beginning
-		StringBuilder stringBuilder = new StringBuilder('<');
+		StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append('<');
 		stringBuilder.append(actionCode.getCode());
 		stringBuilder.append('>');
 		
