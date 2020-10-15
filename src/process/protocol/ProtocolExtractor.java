@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import data.Protocol;
 import data.enums.ActionCodes;
-import data.protocol.Protocol;
 import exceptions.CodeNotFoundException;
 import exceptions.InvalidProtocolException;
 

@@ -1,7 +1,7 @@
 package process.protocol;
 
+import data.Protocol;
 import data.enums.ActionCodes;
-import data.protocol.Protocol;
 
 /**
  * Factory class used to create specific protocols directly
