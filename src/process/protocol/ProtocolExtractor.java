@@ -74,6 +74,8 @@ public class ProtocolExtractor {
 		//we will try to get the action code located at the first index of the list (normally).
 		try {
 			actionCode = ActionCodes.fromCode(args.get(0));
+			//remove it from the list
+			args.remove(0);
 		} catch (CodeNotFoundException e) {
 			throw new InvalidProtocolException(e.getMessage());
 		}

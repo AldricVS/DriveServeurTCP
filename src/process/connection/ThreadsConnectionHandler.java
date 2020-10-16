@@ -42,7 +42,7 @@ public class ThreadsConnectionHandler extends Thread{
 			//connect to database
 			databaseManager = new DatabaseManager(databaseUrl, databaseUser, databasePassword);
 			serverSocket = new ServerSocket(port);
-			System.out.println("Waiting for clients on port " + port);
+			start();
 			logger.info("Server waiting for clients on port " + port);
 		}catch (IOException e) {
 			//we can't do anything here, we have to stop the application  
