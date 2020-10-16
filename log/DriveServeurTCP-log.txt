@@ -1,0 +1,6 @@
+INFO main process.database.DatabaseManager - Start connection to localhost:5432/drivebdd
+FATAL main process.connection.ThreadsConnectionHandler - Cannot connect to database : Connection to localhost:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+INFO main process.database.DatabaseManager - Start connection to localhost:5432/drivebdd
+FATAL main process.connection.ThreadsConnectionHandler - Cannot connect to database : Connection to localhost:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+INFO main process.database.DatabaseManager - Start connection to localhost:5432/drivebdd
+FATAL main process.connection.ThreadsConnectionHandler - Cannot connect to database : Connection to localhost:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.

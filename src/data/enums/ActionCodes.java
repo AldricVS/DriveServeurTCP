@@ -9,6 +9,7 @@ import exceptions.CodeNotFoundException;
 public enum ActionCodes {
 	CONNECTION_NORMAL("0001"),
 	CONNECTION_ADMIN("0002"),
+	DISCONNECT("1000"),
 	ADD_NEW_PRODUCT("0101"),
 	ADD_PRODUCT_QUANTITY("0102"),
 	REMOVE_PRODUCT_QUANTITY("0103"),

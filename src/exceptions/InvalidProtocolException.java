@@ -26,5 +26,4 @@ public class InvalidProtocolException extends Exception {
 	public InvalidProtocolException(Throwable arg0) {
 		super(arg0);
 	}
-
 }

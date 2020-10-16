@@ -2,15 +2,18 @@ package process.connection;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import data.Protocol;
 import data.User;
 import logger.LoggerUtility;
 import process.database.DatabaseManager;
+import process.protocol.ProtocolFactory;
 
 /**
  * Main class of the server : it will wait for new clients connecting and create threads for newcommers.
@@ -77,5 +80,53 @@ public class ThreadsConnectionHandler extends Thread{
 				isListening = false;
 			}
 		}
+	}
+
+	public Protocol queryConnectionDatabase(String login, String password, boolean isAdmin) {
+		String query = String.format("SELECT COUNT(*) FROM %s WHERE login = '%s' AND mot_de_passe = '%s';",
+				isAdmin ? "administrateur" : "employe",
+				login,
+				password);
+		
+		try {
+			ResultSet result = databaseManager.excecuteSingleQuery(query);
+			//get the number returned
+			int count = result.getInt(1);
+			//if different from 1, we didn't found the user in the database
+			if(count != 1) {
+				return ProtocolFactory.createErrorProtocol("Le combo identifiant / mot de passe n'est pas valide");
+			}else {
+				return ProtocolFactory.createSuccessProtocol();
+			}
+			
+		} catch (SQLException e) {
+			String errorMessage = "Error while communicating with database : " + e.getMessage();
+			logger.error(errorMessage);
+			System.err.println(errorMessage);
+			//we will send to client an error message
+			return ProtocolFactory.createErrorProtocol("Erreur lors de la communication avec la base de données.");
+		}
+	}
+	
+	public void addUser(User user) {
+		users.add(user);
+	}
+	
+	public void removeUser(User user) {
+		users.remove(user);
+	}
+	
+	/**
+	 * Check if user is already in list
+	 * @param user the user to check
+	 * @returns if user is already in list or not
+	 */
+	public boolean isUserInList(User user) {
+		for(User u : users) {
+			if(user.getName().equals(u.getName())) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

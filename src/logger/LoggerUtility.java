@@ -11,8 +11,8 @@ import org.apache.log4j.PropertyConfigurator;
  * @author Tianxiao.Liu@u-cergy.fr
  */
 public class LoggerUtility {
-	private static final String TEXT_LOG_CONFIG = "src/logger/log4j-text.properties";
-	private static final String HTML_LOG_CONFIG = "src/logger/log4j-html.properties";
+	private static final String TEXT_LOG_CONFIG = "log/log4j-text.properties";
+	private static final String HTML_LOG_CONFIG = "log/log4j-html.properties";
 	
 	/**
 	 * Change this value in order to change the log type ("text" or "html")

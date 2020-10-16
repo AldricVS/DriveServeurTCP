@@ -11,7 +11,7 @@ import data.enums.ActionCodes;
  * A protocol string is composed like this : <p>
  * {@code <Action code><option 1><option 2>...<option n>}<p>
  * The number of options will vary depending of the action code 
- * @author Aldric Vitali Silvestre
+ * @author Aldric Vitali Silvestre <aldric.vitali@outlook.fr>
  *
  */
 public class Protocol {
@@ -32,6 +32,22 @@ public class Protocol {
 	public Protocol(ActionCodes actionCode, List<String> args) {
 		this.actionCode = actionCode;
 		options = args;
+	}
+	
+	public List<String> getOptionsList(){
+		return options;
+	}
+	
+	public int getOptionsListSize() {
+		return options.size();
+	}
+	
+	/**
+	 * @param index the position of the string in the list
+	 * @return the string at specified position or {@code null} if index is out of bounds
+	 */
+	public String getOptionsElement(int index) {
+		return options.get(index);
 	}
 
 	public ActionCodes getActionCode() {
@@ -66,20 +82,15 @@ public class Protocol {
 	 * @return the string to send
 	 */
 	public String toString() {
-		//create StringBuilder to ensure good performance, even if there is many Strings to append
-		//add the action code at the beginning
-		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append('<');
-		stringBuilder.append(actionCode.getCode());
-		stringBuilder.append('>');
-		
-		//then, add all options one after another
-		for(String option : options) {
-			stringBuilder.append('<');
-			stringBuilder.append(option);
-			stringBuilder.append('>');
+		StringBuilder sb = new StringBuilder();
+		sb.append('<');
+		sb.append(actionCode.getCode());
+		sb.append('>');
+		for (String s : options) {
+			sb.append('<');
+			sb.append(s);
+			sb.append('>');
 		}
-		
-		return stringBuilder.toString();
+		return sb.toString();
 	}
 }
