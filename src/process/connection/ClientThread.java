@@ -84,6 +84,7 @@ public class ClientThread extends Thread {
 			
 			//here, user is created, so we can add it to the list
 			handler.addUser(user);
+			ClientThread.logger.info(user.getName() + " is now connected.");
 			
 			/**
 			 * Main loop where thread will be when connected
@@ -99,15 +100,16 @@ public class ClientThread extends Thread {
 				}catch(InvalidProtocolException e) {
 					//if protocol is invalid, send to client an error message and return at the beggining of the loop
 					protocolToSend = ProtocolFactory.createErrorProtocol("Le message envoyé n'est pas valide pour le serveur.");
-					String errorMessage = "Client's message is not valid : " + e.getMessage();
+					outputFlow.println(protocolToSend);
+					String errorMessage = user.getName() + "'s message is not valid : " + e.getMessage();
 					ClientThread.logger.warn(errorMessage);
-					System.err.println(errorMessage);
 					continue;
 				}
 				
 				//check if protocol has code DISCONNECT
 				Protocol protocolRecieved = extractor.getProtocol();
-				if(protocolToSend.getActionCode() == ActionCodes.DISCONNECT) {
+				if(protocolRecieved.getActionCode() == ActionCodes.DISCONNECT) {
+					ClientThread.logger.info(user.getName() + " has disconnected");
 					break;
 				}else {
 					protocolToSend = askToServer(protocolRecieved);

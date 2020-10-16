@@ -83,7 +83,7 @@ public class ThreadsConnectionHandler extends Thread{
 	}
 
 	public Protocol queryConnectionDatabase(String login, String password, boolean isAdmin) {
-		String query = String.format("SELECT COUNT(*) FROM %s WHERE login = '%s' AND mot_de_passe = '%s';",
+		String query = String.format("SELECT COUNT(*) AS count FROM %s WHERE login = '%s' AND mot_de_passe = '%s';",
 				isAdmin ? "administrateur" : "employe",
 				login,
 				password);
@@ -91,7 +91,8 @@ public class ThreadsConnectionHandler extends Thread{
 		try {
 			ResultSet result = databaseManager.excecuteSingleQuery(query);
 			//get the number returned
-			int count = result.getInt(1);
+			result.next();
+			int count = result.getInt("count");
 			//if different from 1, we didn't found the user in the database
 			if(count != 1) {
 				return ProtocolFactory.createErrorProtocol("Le combo identifiant / mot de passe n'est pas valide");
