@@ -21,7 +21,7 @@ import process.protocol.ProtocolFactory;
 /**
  * Thread dealing with a single client.
  * 
- * @author Aldric Vitali Silvestre <aldric.vitali@outtlok.fr>
+ * @author Aldric Vitali Silvestre <aldric.vitali@outlook.fr>
  */
 public class ClientThread extends Thread {
 	private static Logger logger = LoggerUtility.getLogger(ClientThread.class, LoggerUtility.LOG_PREFERENCE);

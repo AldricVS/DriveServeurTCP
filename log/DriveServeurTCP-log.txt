@@ -4,3 +4,37 @@ INFO main process.database.DatabaseManager - Start connection to localhost:5432/
 FATAL main process.connection.ThreadsConnectionHandler - Cannot connect to database : Connection to localhost:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
 INFO main process.database.DatabaseManager - Start connection to localhost:5432/drivebdd
 FATAL main process.connection.ThreadsConnectionHandler - Cannot connect to database : Connection to localhost:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+INFO main process.database.DatabaseManager - Start connection to localhost:5432/drivebdd
+INFO main process.database.DatabaseManager - Database connected !
+INFO main process.connection.ThreadsConnectionHandler - Server waiting for clients on port 5000
+INFO Thread-0 process.connection.ThreadsConnectionHandler - New client connected
+ERROR Thread-2 process.connection.ThreadsConnectionHandler - Error while communicating with database : Le ResultSet n'est pas positionné correctement, vous devez peut-être appeler next().
+INFO main process.database.DatabaseManager - Start connection to localhost:5432/drivebdd
+INFO main process.database.DatabaseManager - Database connected !
+FATAL main process.connection.ThreadsConnectionHandler - Cannot connect on port 5000 : Address already in use: JVM_Bind
+INFO main process.database.DatabaseManager - Start connection to localhost:5432/drivebdd
+INFO main process.database.DatabaseManager - Database connected !
+INFO main process.connection.ThreadsConnectionHandler - Server waiting for clients on port 5000
+INFO Thread-0 process.connection.ThreadsConnectionHandler - New client connected
+WARN Thread-2 process.connection.ClientThread - Client's message is not valid : 0003 n'est pas un code valide.
+INFO main process.database.DatabaseManager - Start connection to localhost:5432/drivebdd
+INFO main process.database.DatabaseManager - Database connected !
+INFO main process.connection.ThreadsConnectionHandler - Server waiting for clients on port 5000
+INFO Thread-0 process.connection.ThreadsConnectionHandler - New client connected
+WARN Thread-2 process.connection.ClientThread - Client's message is not valid : 0003 n'est pas un code valide.
+INFO main process.database.DatabaseManager - Start connection to localhost:5432/drivebdd
+INFO main process.database.DatabaseManager - Database connected !
+INFO main process.connection.ThreadsConnectionHandler - Server waiting for clients on port 5000
+INFO Thread-0 process.connection.ThreadsConnectionHandler - New client connected
+INFO main process.database.DatabaseManager - Start connection to localhost:5432/drivebdd
+INFO main process.database.DatabaseManager - Database connected !
+INFO main process.connection.ThreadsConnectionHandler - Server waiting for clients on port 5000
+INFO Thread-0 process.connection.ThreadsConnectionHandler - New client connected
+INFO Thread-2 process.connection.ClientThread - bernar disconnected
+INFO main process.database.DatabaseManager - Start connection to localhost:5432/drivebdd
+INFO main process.database.DatabaseManager - Database connected !
+INFO main process.connection.ThreadsConnectionHandler - Server waiting for clients on port 5000
+INFO Thread-0 process.connection.ThreadsConnectionHandler - New client connected
+INFO Thread-2 process.connection.ClientThread - bernar is now connected.
+WARN Thread-2 process.connection.ClientThread - bernar's message is not valid : 2154 n'est pas un code valide.
+INFO Thread-2 process.connection.ClientThread - bernar disconnected
