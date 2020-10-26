@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -15,6 +17,7 @@ import data.User;
 import data.enums.ActionCodes;
 import exceptions.InvalidProtocolException;
 import logger.LoggerUtility;
+import process.database.DatabaseManager;
 import process.protocol.ProtocolExtractor;
 import process.protocol.ProtocolFactory;
 
@@ -173,6 +176,51 @@ public class ClientThread extends Thread {
 	 * @return the answer to send to client
 	 */
 	private Protocol askToServer(Protocol recievedProtocol) {
+		 
+		/**  squelette récupération d'action + envoye de la commande a la DB*/
+		// connection base de donnéer 
+		String url="" ;
+		String utilisateur="drivepiceriebd" ;
+		String motDePasse="AlRaMa311621" ;
+		switch(recievedProtocol.getActionCode()) {
+
+			case ADD_NEW_PRODUCT  :
+					if(verifyAttribut(5,recievedProtocol )) {
+						try {
+							 DatabaseManager data= new DatabaseManager(url, utilisateur, motDePasse);//  on connait pas encore la ou l'on va connecter la base de donner 
+							ResultSet result =data.excecuteSingleQuery("INSERT INTO produit "+recievedProtocol.getOptionsElement(2)+recievedProtocol.getOptionsElement(3)+recievedProtocol.getOptionsElement(4)+recievedProtocol.getOptionsElement(5));
+							
+						}catch(SQLException ex) {
+							String errormessage=ex.getMessage() ;
+							ClientThread.logger.error(errormessage);
+							System.err.println(errormessage);
+						}
+					
+					}else {
+						InvalidProtocolException e;
+					}
+					
+			break;
+			case  GET_SPECIFIC_ORDER:
+			
+			break;
+			
+		}
+		
 		return null;
+	}
+	/**
+	 * method use for verify if the number of attribute is right 
+	 * @param nbAttribut
+	 * @param recievdeProtocol
+	 * @return if the number of attribute corresponding at the action code 
+	 */
+	
+	private boolean verifyAttribut(int nbAttribut,Protocol recievdeProtocol) {
+			if(nbAttribut== recievdeProtocol.getOptionsListSize() ) {
+				return true;
+			}
+		
+	return false;
 	}
 }
