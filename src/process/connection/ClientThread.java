@@ -187,42 +187,68 @@ public class ClientThread extends Thread {
 			break;
 			case  GET_SPECIFIC_ORDER:
 				if(verifyAttribut(1,recievedProtocol )) {
+					String result =handler.queryAddNewProduct(recievedProtocol);
+					return  new ProtocolFactory().createErrorProtocol(result);
+									
 				}
 			break;
 			case ADD_PRODUCT_QUANTITY :
 				if(verifyAttribut(2,recievedProtocol )) {
+					String result = handler.queryAddProducQuantity(recievedProtocol);
 				}
-			break;	
+			break;	// a modifier 
 			case REMOVE_PRODUCT_QUANTITY:
 				if(verifyAttribut(2,recievedProtocol )) {
+					String result =handler.queryAddNewProduct(recievedProtocol);
+					return  new ProtocolFactory().createErrorProtocol(result);
+				
 				}
 			break;
 			case REMOVE_PRODUCT_DEFINITELY:
 				if(verifyAttribut(1,recievedProtocol )) {
+					String result =handler.queryAddNewProduct(recievedProtocol);
+					return  new ProtocolFactory().createErrorProtocol(result);
+				
 				}
 			break ;
 			case VALIDATE_ORDER:
 				if(verifyAttribut(1,recievedProtocol )) {
+					String result =handler.queryAddNewProduct(recievedProtocol);
+					return  new ProtocolFactory().createErrorProtocol(result);
+				
 				}
 			break;
 			
 			case DELETE_ORDER:
 				if(verifyAttribut(5,recievedProtocol )) {
+					String result =handler.queryAddNewProduct(recievedProtocol);
+					return  new ProtocolFactory().createErrorProtocol(result);
+				
 				}
+				
 			break;
 			
 			case GET_PRODUCT_LIST:
 				if(verifyAttribut(0,recievedProtocol )) {
+					String result =handler.queryAddNewProduct(recievedProtocol);
+					return  new ProtocolFactory().createErrorProtocol(result);
+				
 				}
 			break;
 			
 			case GET_ORDER_LIST:
 				if(verifyAttribut(0,recievedProtocol )) {
+					String result =handler.queryAddNewProduct(recievedProtocol);
+					return  new ProtocolFactory().createErrorProtocol(result);
+				
 				}
 			break;
 			
 			case GET_SPECIFIC_PRDUCT:
 				if(verifyAttribut(1,recievedProtocol )) {
+					String result =handler.queryAddNewProduct(recievedProtocol);
+					return  new ProtocolFactory().createErrorProtocol(result);
+				
 				}
 			break;
 			

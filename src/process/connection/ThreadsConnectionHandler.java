@@ -131,6 +131,11 @@ public class ThreadsConnectionHandler extends Thread{
 		}
 		return false;
 	}
+	/**
+	 * function for add a new product at the database 
+	 * @param recievedProtocol
+	 * @return succes or echec for this action 
+	 */
 	public String  queryAddNewProduct( Protocol recievedProtocol) {
 	try {
 		BigDecimal price= new BigDecimal(recievedProtocol.getOptionsElement(4));
@@ -139,12 +144,31 @@ public class ThreadsConnectionHandler extends Thread{
 		return "reussite";
 	}catch(SQLException ex) {
 		String errormessage=ex.getMessage() ;
-		logger.error(errormessage);
-		
+		logger.error(errormessage);	
 	}
 	return "echec";
-	
 	}
-
+	
+	public String queryAddProducQuantity(Protocol recievedProtocol) {
+		try {
+			BigDecimal price= new BigDecimal(recievedProtocol.getOptionsElement(2));
+			ResultSet result=databaseManager.excecuteSingleQuery("UPDATE produit SET prix ="+price+" WHERE id_produit= "+recievedProtocol.getOptionsElement(1)+" ;");
+			return "reussite";
+		}catch(SQLException ex) {
+			String errormessage=ex.getMessage() ;
+			logger.error(errormessage);	
+		}
+		return "echec";
+		}
+	public String queryGetSpecificOrder(Protocol recievedProtocol) {
+		try {
+			ResultSet result=databaseManager.excecuteSingleQuery("select *from Produit_commande where 	id_commande ="+recievedProtocol.getOptionsElement(1)+";");
+			return result.toString();
+		}catch(SQLException ex){
+			String errormessage=ex.getMessage() ;
+			logger.error(errormessage);	
+		}
+		return "la commande existe pas ";
+	}
 	
 }
