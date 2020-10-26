@@ -179,25 +179,17 @@ public class ClientThread extends Thread {
 		 
 		/**  squelette récupération d'action + envoye de la commande a la DB*/
 		// connection base de donnéer 
-		String url="" ;
-		String utilisateur="drivepiceriebd" ;
-		String motDePasse="AlRaMa311621" ;
+		int port=5432;
+		String url="";
+		String utilisateur="" ;
+		String motDePasse="" ;
+		ThreadsConnectionHandler connect =new ThreadsConnectionHandler(port,url,utilisateur,motDePasse);
+		
 		switch(recievedProtocol.getActionCode()) {
 
 			case ADD_NEW_PRODUCT  :
 					if(verifyAttribut(5,recievedProtocol )) {
-						try {
-							 DatabaseManager data= new DatabaseManager(url, utilisateur, motDePasse);//  on connait pas encore la ou l'on va connecter la base de donner 
-							ResultSet result =data.excecuteSingleQuery("INSERT INTO produit "+recievedProtocol.getOptionsElement(2)+recievedProtocol.getOptionsElement(3)+recievedProtocol.getOptionsElement(4)+recievedProtocol.getOptionsElement(5));
-							
-						}catch(SQLException ex) {
-							String errormessage=ex.getMessage() ;
-							ClientThread.logger.error(errormessage);
-							System.err.println(errormessage);
-						}
-					
-					}else {
-						InvalidProtocolException e;
+						Protocol result =connect.queryAddNewProduct(recievedProtocol);
 					}
 					
 			break;

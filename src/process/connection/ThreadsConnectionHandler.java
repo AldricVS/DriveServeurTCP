@@ -130,4 +130,18 @@ public class ThreadsConnectionHandler extends Thread{
 		}
 		return false;
 	}
+	public Protocol queryAddNewProduct( Protocol recievedProtocol) {
+	try {
+		ResultSet result = databaseManager.excecuteSingleQuery("INSERT INTO produit"+ recievedProtocol.getOptionsElement(2)
+		+recievedProtocol.getOptionsElement(3)+recievedProtocol.getOptionsElement(4)+
+		recievedProtocol.getOptionsElement(5));
+		
+	}catch(SQLException ex) {
+		String errormessage=ex.getMessage() ;
+		logger.error(errormessage);
+		
+	}
+		return recievedProtocol;
+		
+	}
 }
