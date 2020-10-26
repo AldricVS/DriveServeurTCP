@@ -1,6 +1,7 @@
 package process.connection;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.ServerSocket;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -130,18 +131,20 @@ public class ThreadsConnectionHandler extends Thread{
 		}
 		return false;
 	}
-	public Protocol queryAddNewProduct( Protocol recievedProtocol) {
+	public String  queryAddNewProduct( Protocol recievedProtocol) {
 	try {
-		ResultSet result = databaseManager.excecuteSingleQuery("INSERT INTO produit"+ recievedProtocol.getOptionsElement(2)
-		+recievedProtocol.getOptionsElement(3)+recievedProtocol.getOptionsElement(4)+
-		recievedProtocol.getOptionsElement(5));
-		
+		BigDecimal price= new BigDecimal(recievedProtocol.getOptionsElement(4));
+		ResultSet result = databaseManager.excecuteSingleQuery("INSERT INTO produit ("+ recievedProtocol.getOptionsElement(1)+", "
+		+recievedProtocol.getOptionsElement(2)+","+recievedProtocol.getOptionsElement(3)+","+price);
+		return "reussite";
 	}catch(SQLException ex) {
 		String errormessage=ex.getMessage() ;
 		logger.error(errormessage);
 		
 	}
-		return recievedProtocol;
-		
+	return "echec";
+	
 	}
+
+	
 }

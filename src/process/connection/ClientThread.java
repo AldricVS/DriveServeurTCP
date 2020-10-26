@@ -176,26 +176,57 @@ public class ClientThread extends Thread {
 	 * @return the answer to send to client
 	 */
 	private Protocol askToServer(Protocol recievedProtocol) {
-		 
-		/**  squelette récupération d'action + envoye de la commande a la DB*/
-		// connection base de donnéer 
-		int port=5432;
-		String url="";
-		String utilisateur="" ;
-		String motDePasse="" ;
-		ThreadsConnectionHandler connect =new ThreadsConnectionHandler(port,url,utilisateur,motDePasse);
 		
 		switch(recievedProtocol.getActionCode()) {
 
 			case ADD_NEW_PRODUCT  :
 					if(verifyAttribut(5,recievedProtocol )) {
-						Protocol result =connect.queryAddNewProduct(recievedProtocol);
+						String result =handler.queryAddNewProduct(recievedProtocol);
+						return  new ProtocolFactory().createErrorProtocol(result);
 					}
-					
 			break;
 			case  GET_SPECIFIC_ORDER:
-			
+				if(verifyAttribut(1,recievedProtocol )) {
+				}
 			break;
+			case ADD_PRODUCT_QUANTITY :
+				if(verifyAttribut(2,recievedProtocol )) {
+				}
+			break;	
+			case REMOVE_PRODUCT_QUANTITY:
+				if(verifyAttribut(2,recievedProtocol )) {
+				}
+			break;
+			case REMOVE_PRODUCT_DEFINITELY:
+				if(verifyAttribut(1,recievedProtocol )) {
+				}
+			break ;
+			case VALIDATE_ORDER:
+				if(verifyAttribut(1,recievedProtocol )) {
+				}
+			break;
+			
+			case DELETE_ORDER:
+				if(verifyAttribut(5,recievedProtocol )) {
+				}
+			break;
+			
+			case GET_PRODUCT_LIST:
+				if(verifyAttribut(0,recievedProtocol )) {
+				}
+			break;
+			
+			case GET_ORDER_LIST:
+				if(verifyAttribut(0,recievedProtocol )) {
+				}
+			break;
+			
+			case GET_SPECIFIC_PRDUCT:
+				if(verifyAttribut(1,recievedProtocol )) {
+				}
+			break;
+			
+			
 			
 		}
 		
