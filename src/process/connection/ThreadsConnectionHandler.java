@@ -93,7 +93,7 @@ public class ThreadsConnectionHandler extends Thread{
 				password);
 		
 		try {
-			ResultSet result = databaseManager.excecuteSingleQuery(query);
+			ResultSet result = databaseManager.executeSelectQuery(query);
 			//get the number returned
 			result.next();
 			int count = result.getInt("count");
@@ -156,13 +156,12 @@ public class ThreadsConnectionHandler extends Thread{
 						/*
 						 * prepare the SQL resquest fpr BD 
 						 */
-						String SQL = String.format("INSERT INTO produit (nom_produit,prix_produit,stock_total_produit) VALUES('"+recievedProtocol.getOptionsElement(0)+"',%s,%s);",
+						String query = String.format("INSERT INTO produit (nom_produit,prix_produit,stock_total_produit) VALUES('%s',%s,%s);",
+								recievedProtocol.getOptionsElement(0),
 								price,
 								quantity
-								
 						);
-						ResultSet result = databaseManager.excecuteSingleQuery(SQL);
-						System.out.println(result.toString());
+						databaseManager.executeDmlQuery(query);
 						return  ProtocolFactory.createSuccessProtocol();
 						
 					}else {
@@ -180,9 +179,10 @@ public class ThreadsConnectionHandler extends Thread{
 			return ProtocolFactory.createErrorProtocol("le produit n'est pas ajouter cause : nom de produit trop long ");
 		}	
 	}catch(SQLException ex) { // vérifier l'execption 
+		ex.printStackTrace();
 		String errormessage=ex.getMessage() ;
 		logger.error(errormessage);	
-		return ProtocolFactory.createErrorProtocol("le produit n'est pas ajouter cause : impossible de se connecter a la base de donnée");
+		return ProtocolFactory.createErrorProtocol("le produit n'est pas ajouter cause : impossible de se connecter a la base de données");
 	}
 	}
 	
@@ -195,7 +195,7 @@ public class ThreadsConnectionHandler extends Thread{
 			
 			
 			BigDecimal price= new BigDecimal(recievedProtocol.getOptionsElement(2));
-			ResultSet result=databaseManager.excecuteSingleQuery("UPDATE produit SET prix ="+price+" WHERE id_produit= "+recievedProtocol.getOptionsElement(1)+" ;");
+			ResultSet result=databaseManager.executeSelectQuery("UPDATE produit SET prix ="+price+" WHERE id_produit= "+recievedProtocol.getOptionsElement(1)+" ;");
 			System.out.println(result.toString());
 			return  ProtocolFactory.createSuccessProtocol();
 		}catch(SQLException ex) {
@@ -207,7 +207,7 @@ public class ThreadsConnectionHandler extends Thread{
 		}
 	public String queryGetSpecificOrder(Protocol recievedProtocol) {
 		try {
-			ResultSet result=databaseManager.excecuteSingleQuery("select *from Produit_commande where 	id_commande ="+recievedProtocol.getOptionsElement(1)+";");
+			ResultSet result=databaseManager.executeSelectQuery("select *from Produit_commande where 	id_commande ="+recievedProtocol.getOptionsElement(1)+";");
 			return result.toString();
 		}catch(SQLException ex){
 			String errormessage=ex.getMessage() ;

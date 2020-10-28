@@ -38,3 +38,30 @@ INFO Thread-0 process.connection.ThreadsConnectionHandler - New client connected
 INFO Thread-2 process.connection.ClientThread - bernar is now connected.
 WARN Thread-2 process.connection.ClientThread - bernar's message is not valid : 2154 n'est pas un code valide.
 INFO Thread-2 process.connection.ClientThread - bernar disconnected
+INFO main process.database.DatabaseManager - Start connection to localhost:5432/drivebdd
+INFO main process.database.DatabaseManager - Database connected !
+INFO main process.connection.ThreadsConnectionHandler - Server waiting for clients on port 5000
+INFO Thread-0 process.connection.ThreadsConnectionHandler - New client connected
+INFO Thread-0 process.connection.ThreadsConnectionHandler - New client connected
+INFO Thread-3 process.connection.ClientThread - bernar is now connected.
+INFO Thread-3 process.connection.ClientThread - bernar has disconnected
+INFO main process.database.DatabaseManager - Start connection to localhost:5432/drivepiceriebd
+INFO main process.database.DatabaseManager - Database connected !
+INFO main process.connection.ThreadsConnectionHandler - Server waiting for clients on port 5000
+INFO Thread-0 process.connection.ThreadsConnectionHandler - New client connected
+INFO Thread-2 process.connection.ClientThread - michel is now connected.
+ERROR Thread-2 process.connection.ThreadsConnectionHandler - Aucun résultat retourné par la requête.
+INFO main process.database.DatabaseManager - Start connection to localhost:5432/drivepiceriebd
+INFO main process.database.DatabaseManager - Database connected !
+INFO main process.connection.ThreadsConnectionHandler - Server waiting for clients on port 5000
+INFO Thread-0 process.connection.ThreadsConnectionHandler - New client connected
+INFO Thread-2 process.connection.ClientThread - michel is now connected.
+ERROR Thread-2 process.connection.ThreadsConnectionHandler - Aucun résultat retourné par la requête.
+INFO main process.database.DatabaseManager - Start connection to localhost:5432/drivepiceriebd
+INFO main process.database.DatabaseManager - Database connected !
+FATAL main process.connection.ThreadsConnectionHandler - Cannot connect on port 5000 : Address already in use: JVM_Bind
+INFO main process.database.DatabaseManager - Start connection to localhost:5432/drivepiceriebd
+INFO main process.database.DatabaseManager - Database connected !
+INFO main process.connection.ThreadsConnectionHandler - Server waiting for clients on port 5000
+INFO Thread-0 process.connection.ThreadsConnectionHandler - New client connected
+INFO Thread-2 process.connection.ClientThread - michel is now connected.

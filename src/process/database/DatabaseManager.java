@@ -40,9 +40,20 @@ public class DatabaseManager {
 	 * @return what database respond
 	 * @throws SQLException if an error occurs while asking database
 	 */
-	public ResultSet excecuteSingleQuery(String query) throws SQLException{
+	public ResultSet executeSelectQuery(String query) throws SQLException{
 		Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 		return statement.executeQuery(query);
+	}
+	
+	/**
+	 * Permits to execute query that don't return result.
+	 * @param query the query to execute 
+	 * @return true if query has modified something, false else
+	 * @throws SQLException if an error occurs while asking database
+	 */
+	public boolean executeDmlQuery(String query) throws SQLException{
+		Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+		return statement.executeUpdate(query) > 0;
 	}
 
 }

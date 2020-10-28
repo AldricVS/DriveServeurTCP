@@ -28,7 +28,7 @@ public class TestEtuDatabase {
 	@Test
 	public void getSpecificCentralUnit() throws SQLException{
 		String query = "SELECT * FROM uc WHERE no_uc = 'UnitC070009'";
-		ResultSet resultSet = databaseManager.excecuteSingleQuery(query);
+		ResultSet resultSet = databaseManager.executeSelectQuery(query);
 		resultSet.next();
 		
 		String unitMemory = resultSet.getString("memoire");
@@ -42,7 +42,7 @@ public class TestEtuDatabase {
 	public void checkBreakdowns() throws SQLException{
 		//we have two breakdowns in the database, so we need to count... two of them in the result
 		String query = "SELECT obj_invent FROM panne";
-		ResultSet resultSet = databaseManager.excecuteSingleQuery(query);
+		ResultSet resultSet = databaseManager.executeSelectQuery(query);
 		resultSet.last();
 		assertEquals(2, resultSet.getRow());
 		assertEquals("UnitC070010", resultSet.getString("obj_invent"));
