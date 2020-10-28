@@ -3,8 +3,11 @@ package process.connection;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.ServerSocket;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -84,7 +87,7 @@ public class ThreadsConnectionHandler extends Thread{
 	}
 
 	public Protocol queryConnectionDatabase(String login, String password, boolean isAdmin) {
-		String query = String.format("SELECT COUNT(*) AS count FROM %s WHERE login = '%s' AND mot_de_passe = '%s';",
+		String query = String.format("SELECT COUNT(*) AS count FROM %s WHERE nom_employe = '%s' AND mot_de_passe_Employe = '%s';",
 				isAdmin ? "administrateur" : "employe",
 				login,
 				password);
@@ -136,29 +139,71 @@ public class ThreadsConnectionHandler extends Thread{
 	 * @param recievedProtocol
 	 * @return succes or echec for this action 
 	 */
-	public String  queryAddNewProduct( Protocol recievedProtocol) {
+	public Protocol  queryAddNewProduct( Protocol recievedProtocol) {
 	try {
-		BigDecimal price= new BigDecimal(recievedProtocol.getOptionsElement(4));
-		ResultSet result = databaseManager.excecuteSingleQuery("INSERT INTO produit ("+ recievedProtocol.getOptionsElement(1)+", "
-		+recievedProtocol.getOptionsElement(2)+","+recievedProtocol.getOptionsElement(3)+","+price);
-		return "reussite";
-	}catch(SQLException ex) {
+		/**
+		 * veirify if the name is not more than 50 caracter  
+		 */
+		if(recievedProtocol.getOptionsElement(0).length()<51) {
+			/*
+			 * verification of price between 0.1 and 999.99 
+			 */
+				float  verprice =Float.parseFloat(recievedProtocol.getOptionsElement(1));
+				if((0 < verprice) || (verprice<1000)) {
+					int quantity = Integer.parseInt(recievedProtocol.getOptionsElement(2));
+					if((quantity>= 0) ||(recievedProtocol.getOptionsElement(3).length()<5)) {
+						BigDecimal price= new BigDecimal(recievedProtocol.getOptionsElement(1));
+						/*
+						 * prepare the SQL resquest fpr BD 
+						 */
+						String SQL = String.format("INSERT INTO produit (nom_produit,prix_produit,stock_total_produit) VALUES('"+recievedProtocol.getOptionsElement(0)+"',%s,%s);",
+								price,
+								quantity
+								
+						);
+						ResultSet result = databaseManager.excecuteSingleQuery(SQL);
+						System.out.println(result.toString());
+						return  ProtocolFactory.createSuccessProtocol();
+						
+					}else {
+						logger.error("wrong cause : invalid quantity ");	
+						return ProtocolFactory.createErrorProtocol("le produit n'est pas ajouter cause : la quantité n'est pas possible  ");
+					}
+				}else {
+					logger.error("wrong cause : invalid price ");	
+					return ProtocolFactory.createErrorProtocol("le produit n'est pas ajouter cause : le prix n'est pas valide  ");
+				}
+			
+		}else {
+			
+			logger.error("wrong cause: invalid name ");	
+			return ProtocolFactory.createErrorProtocol("le produit n'est pas ajouter cause : nom de produit trop long ");
+		}	
+	}catch(SQLException ex) { // vérifier l'execption 
 		String errormessage=ex.getMessage() ;
 		logger.error(errormessage);	
+		return ProtocolFactory.createErrorProtocol("le produit n'est pas ajouter cause : impossible de se connecter a la base de donnée");
 	}
-	return "echec";
 	}
 	
-	public String queryAddProducQuantity(Protocol recievedProtocol) {
+	public Protocol queryAddProducQuantity(Protocol recievedProtocol) {
 		try {
+			//if() {
+				
+		//	}
+			
+			
+			
 			BigDecimal price= new BigDecimal(recievedProtocol.getOptionsElement(2));
 			ResultSet result=databaseManager.excecuteSingleQuery("UPDATE produit SET prix ="+price+" WHERE id_produit= "+recievedProtocol.getOptionsElement(1)+" ;");
-			return "reussite";
+			System.out.println(result.toString());
+			return  ProtocolFactory.createSuccessProtocol();
 		}catch(SQLException ex) {
 			String errormessage=ex.getMessage() ;
 			logger.error(errormessage);	
+			return ProtocolFactory.createErrorProtocol("le produit n'est pas ajouter cause : impossible de se connecter a la base de donnée");
 		}
-		return "echec";
+		
 		}
 	public String queryGetSpecificOrder(Protocol recievedProtocol) {
 		try {

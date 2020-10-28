@@ -25,6 +25,7 @@ import process.protocol.ProtocolFactory;
  * Thread dealing with a single client.
  * 
  * @author Aldric Vitali Silvestre <aldric.vitali@outlook.fr>
+ * @author D'Urso Raphaël <rdurso@outlook.fr> 
  */
 public class ClientThread extends Thread {
 	private static Logger logger = LoggerUtility.getLogger(ClientThread.class, LoggerUtility.LOG_PREFERENCE);
@@ -180,23 +181,34 @@ public class ClientThread extends Thread {
 		switch(recievedProtocol.getActionCode()) {
 
 			case ADD_NEW_PRODUCT  :
-					if(verifyAttribut(5,recievedProtocol )) {
-						String result =handler.queryAddNewProduct(recievedProtocol);
-						return  new ProtocolFactory().createErrorProtocol(result);
+				/**
+				 * we verify if the number of atributs is have the right number 
+				 */
+					if(verifyAttributNumber(3,recievedProtocol )) {
+						return handler.queryAddNewProduct(recievedProtocol);
+						  
+								// on return le protocol correspondant 
+					} else{
+						logger.error("error for add new product ");
+						
 					}
+			break;	
+			case ADD_PRODUCT_QUANTITY :
+				if(verifyAttributNumber(2,recievedProtocol )) {
+					return handler.queryAddProducQuantity(recievedProtocol);
+				}else {
+					logger.error("error for update product price ");
+				}
 			break;
+		/*
 			case  GET_SPECIFIC_ORDER:
-				if(verifyAttribut(1,recievedProtocol )) {
+				if(verifyAttributNumber(1,recievedProtocol )) {
 					String result =handler.queryAddNewProduct(recievedProtocol);
 					return  new ProtocolFactory().createErrorProtocol(result);
 									
 				}
 			break;
-			case ADD_PRODUCT_QUANTITY :
-				if(verifyAttribut(2,recievedProtocol )) {
-					String result = handler.queryAddProducQuantity(recievedProtocol);
-				}
-			break;	// a modifier 
+	// a modifier 
 			case REMOVE_PRODUCT_QUANTITY:
 				if(verifyAttribut(2,recievedProtocol )) {
 					String result =handler.queryAddNewProduct(recievedProtocol);
@@ -252,7 +264,7 @@ public class ClientThread extends Thread {
 				}
 			break;
 			
-			
+			*/
 			
 		}
 		
@@ -265,7 +277,7 @@ public class ClientThread extends Thread {
 	 * @return if the number of attribute corresponding at the action code 
 	 */
 	
-	private boolean verifyAttribut(int nbAttribut,Protocol recievdeProtocol) {
+	private boolean verifyAttributNumber(int nbAttribut,Protocol recievdeProtocol) {
 			if(nbAttribut== recievdeProtocol.getOptionsListSize() ) {
 				return true;
 			}

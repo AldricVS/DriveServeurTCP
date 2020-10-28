@@ -72,8 +72,8 @@ public class Protocol {
 	 * @param productPrice the price of the article
 	 * @param productQuantity the quantity of the article
 	 */
-	public void appendProduct(String productName, String productPrice, String productQuantity) {
-		String productOption = productName + ";" + productPrice + ";" + productQuantity;
+	public void appendProduct(String IdArticle, String productName, String productPrice, String productQuantity) {
+		String productOption = IdArticle+ productName + ";" + productPrice + ";" + productQuantity;
 		options.add(productOption);
 	}
 	
