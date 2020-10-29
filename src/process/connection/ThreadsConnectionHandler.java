@@ -137,7 +137,7 @@ public class ThreadsConnectionHandler extends Thread{
 	/**
 	 * function for add a new product at the database 
 	 * @param recievedProtocol
-	 * @return succes or echec for this action 
+	 * @return succes or echec protocol 
 	 */
 	public Protocol  queryAddNewProduct( Protocol recievedProtocol) {
 	try {
@@ -185,35 +185,65 @@ public class ThreadsConnectionHandler extends Thread{
 		return ProtocolFactory.createErrorProtocol("le produit n'est pas ajouter cause : impossible de se connecter a la base de données");
 	}
 	}
-	
+	/**
+	 * function for augment the quantity of one product 
+	 * @param recievedProtocol
+	 * @return succes or ehec protocol
+	 */
 	public Protocol queryAddProducQuantity(Protocol recievedProtocol) {
 		try {
-			//if() {
+			/*
+			 * verify if the produc id exist 
+			 */
+			String queryExist = String.format("SELECT COUNT(*) AS count FROM produit Where id_produit=%s;",
+					recievedProtocol.getOptionsElement(0)
+			);
+			ResultSet exist=databaseManager.executeSelectQuery(queryExist)  ;
+			exist.next();
+			int count = exist.getInt("count");
+			//if different from 1, we didn't found the id of produc 
+			if(count != 1) {
+				logger.error("wrong cause : invalid id product  ");	
+				return ProtocolFactory.createErrorProtocol(" le produit n'a pas été trouver ");
+			}else {
+				/*
+				 * verify the  quantity of stock is under 1000 and superior of 0
+				 */
+				int addquantity= Integer.parseInt(recievedProtocol.getOptionsElement(1));
+				String queryQuantity = String.format("SELECT  stock_total_produit FROM produit Where id_produit=%s;",
+						recievedProtocol.getOptionsElement(0)
+				);
+				ResultSet quantity=databaseManager.executeSelectQuery(queryQuantity)  ;
+				quantity.next();
+				/*
+				 * addition the quantity in db and the addquantity
+				 */
+				int realquantity = quantity.getInt("stock_total_produit");
+				int newquantity =addquantity+realquantity;
+					if((newquantity >0) || (newquantity<1000)) {
+						String queryNewQuantity = String.format("UPDATE produit SET stock_total_produit = %s WHERE id_produit = %s;",
+								newquantity,
+								recievedProtocol.getOptionsElement(0)
+						);
+						databaseManager.executeDmlQuery(queryNewQuantity);
+						return  ProtocolFactory.createSuccessProtocol();
+					}else {
+						logger.error("wrong cause : invalid price  ");	
+						return ProtocolFactory.createErrorProtocol(" le prix n'est pas possible  ");
+					}
+
+			}
 				
-		//	}
-			
-			
-			
-			BigDecimal price= new BigDecimal(recievedProtocol.getOptionsElement(2));
-			ResultSet result=databaseManager.executeSelectQuery("UPDATE produit SET prix ="+price+" WHERE id_produit= "+recievedProtocol.getOptionsElement(1)+" ;");
-			System.out.println(result.toString());
-			return  ProtocolFactory.createSuccessProtocol();
-		}catch(SQLException ex) {
-			String errormessage=ex.getMessage() ;
-			logger.error(errormessage);	
-			return ProtocolFactory.createErrorProtocol("le produit n'est pas ajouter cause : impossible de se connecter a la base de donnée");
-		}
+			}catch(SQLException ex) { // vérifier l'execption 
+				ex.printStackTrace();
+				String errormessage=ex.getMessage() ;
+				logger.error(errormessage);	
+				return ProtocolFactory.createErrorProtocol("le produit n'est pas ajouter cause : impossible de se connecter a la base de données");
+			}
 		
 		}
-	public String queryGetSpecificOrder(Protocol recievedProtocol) {
-		try {
-			ResultSet result=databaseManager.executeSelectQuery("select *from Produit_commande where 	id_commande ="+recievedProtocol.getOptionsElement(1)+";");
-			return result.toString();
-		}catch(SQLException ex){
-			String errormessage=ex.getMessage() ;
-			logger.error(errormessage);	
-		}
-		return "la commande existe pas ";
+	public Protocol queryGetSpecificOrder(Protocol recievedProtocol) {
+		return recievedProtocol;
+		
 	}
-	
 }
