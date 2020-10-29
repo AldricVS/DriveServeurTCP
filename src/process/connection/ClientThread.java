@@ -200,71 +200,20 @@ public class ClientThread extends Thread {
 					logger.error("error for update product price ");
 				}
 			break;
-		/*
-			case  GET_SPECIFIC_ORDER:
+			case REMOVE_PRODUCT_QUANTITY :
+				if(verifyAttributNumber(2,recievedProtocol )) {
+					return handler.queryRemoveProducQuantity(recievedProtocol);
+				}else {
+					logger.error("error for update product price ");
+				}
+			break;
+			case REMOVE_PRODUCT_DEFINITELY :
 				if(verifyAttributNumber(1,recievedProtocol )) {
-					String result =handler.queryAddNewProduct(recievedProtocol);
-					return  new ProtocolFactory().createErrorProtocol(result);
-									
+					return handler.queryRemoveProduc(recievedProtocol);
+				}else {
+					logger.error("error for delete product ");
 				}
-			break;
-	// a modifier 
-			case REMOVE_PRODUCT_QUANTITY:
-				if(verifyAttribut(2,recievedProtocol )) {
-					String result =handler.queryAddNewProduct(recievedProtocol);
-					return  new ProtocolFactory().createErrorProtocol(result);
-				
-				}
-			break;
-			case REMOVE_PRODUCT_DEFINITELY:
-				if(verifyAttribut(1,recievedProtocol )) {
-					String result =handler.queryAddNewProduct(recievedProtocol);
-					return  new ProtocolFactory().createErrorProtocol(result);
-				
-				}
-			break ;
-			case VALIDATE_ORDER:
-				if(verifyAttribut(1,recievedProtocol )) {
-					String result =handler.queryAddNewProduct(recievedProtocol);
-					return  new ProtocolFactory().createErrorProtocol(result);
-				
-				}
-			break;
-			
-			case DELETE_ORDER:
-				if(verifyAttribut(5,recievedProtocol )) {
-					String result =handler.queryAddNewProduct(recievedProtocol);
-					return  new ProtocolFactory().createErrorProtocol(result);
-				
-				}
-				
-			break;
-			
-			case GET_PRODUCT_LIST:
-				if(verifyAttribut(0,recievedProtocol )) {
-					String result =handler.queryAddNewProduct(recievedProtocol);
-					return  new ProtocolFactory().createErrorProtocol(result);
-				
-				}
-			break;
-			
-			case GET_ORDER_LIST:
-				if(verifyAttribut(0,recievedProtocol )) {
-					String result =handler.queryAddNewProduct(recievedProtocol);
-					return  new ProtocolFactory().createErrorProtocol(result);
-				
-				}
-			break;
-			
-			case GET_SPECIFIC_PRDUCT:
-				if(verifyAttribut(1,recievedProtocol )) {
-					String result =handler.queryAddNewProduct(recievedProtocol);
-					return  new ProtocolFactory().createErrorProtocol(result);
-				
-				}
-			break;
-			
-			*/
+			break;	
 			
 		}
 		
