@@ -151,7 +151,7 @@ public class ThreadsConnectionHandler extends Thread{
 		exist.next();
 		int count = exist.getInt("count");
 		//if different from 1, we didn't found the id of produc 
-		if(count != 1) {
+		if(count != 0) {
 			logger.error("wrong cause : invalid id product  ");	
 			return ProtocolFactory.createErrorProtocol(" le produit existe déja  ");
 		}else {
@@ -207,7 +207,7 @@ public class ThreadsConnectionHandler extends Thread{
 			/*
 			 * verify if the produc id exist 
 			 */
-			String queryExist = String.format("SELECT COUNT(*) AS count FROM produit Where id_produit=%s;",
+			String queryExist = String.format("SELECT COUNT(*) AS count FROM produit Where id_produit='%s';",
 					recievedProtocol.getOptionsElement(0)
 			);
 			ResultSet exist=databaseManager.executeSelectQuery(queryExist)  ;
@@ -222,7 +222,7 @@ public class ThreadsConnectionHandler extends Thread{
 				 * verify the  quantity of stock is under 1000 and superior of 0
 				 */
 				int addquantity= Integer.parseInt(recievedProtocol.getOptionsElement(1));
-				String queryQuantity = String.format("SELECT  stock_total_produit FROM produit Where id_produit=%s;",
+				String queryQuantity = String.format("SELECT  stock_total_produit FROM produit Where id_produit='%s';",
 						recievedProtocol.getOptionsElement(0)
 				);
 				ResultSet quantity=databaseManager.executeSelectQuery(queryQuantity)  ;
@@ -233,7 +233,7 @@ public class ThreadsConnectionHandler extends Thread{
 				int realquantity = quantity.getInt("stock_total_produit");
 				int newquantity =addquantity+realquantity;
 					if((newquantity >0) || (newquantity<1000)) {
-						String queryNewQuantity = String.format("UPDATE produit SET stock_total_produit = %s WHERE id_produit = %s;",
+						String queryNewQuantity = String.format("UPDATE produit SET stock_total_produit = %s WHERE id_produit = '%s';",
 								newquantity,
 								recievedProtocol.getOptionsElement(0)
 						);
@@ -264,7 +264,7 @@ public class ThreadsConnectionHandler extends Thread{
 			/*
 			 * verify if the produc id exist 
 			 */
-			String queryExist = String.format("SELECT COUNT(*) AS count FROM produit Where id_produit=%s;",
+			String queryExist = String.format("SELECT COUNT(*) AS count FROM produit Where id_produit='%s';",
 					recievedProtocol.getOptionsElement(0)
 			);
 			ResultSet exist=databaseManager.executeSelectQuery(queryExist)  ;
@@ -279,7 +279,7 @@ public class ThreadsConnectionHandler extends Thread{
 				 * verify the  quantity of stock is under 1000 and superior of 0
 				 */
 				int addquantity= Integer.parseInt(recievedProtocol.getOptionsElement(1));
-				String queryQuantity = String.format("SELECT  stock_total_produit FROM produit Where id_produit=%s;",
+				String queryQuantity = String.format("SELECT  stock_total_produit FROM produit Where id_produit='%s';",
 						recievedProtocol.getOptionsElement(0)
 				);
 				ResultSet quantity=databaseManager.executeSelectQuery(queryQuantity)  ;
@@ -290,7 +290,7 @@ public class ThreadsConnectionHandler extends Thread{
 				int realquantity = quantity.getInt("stock_total_produit");
 				int newquantity =addquantity-realquantity;
 					if((newquantity >0) || (newquantity<1000)) {
-						String queryNewQuantity = String.format("UPDATE produit SET stock_total_produit = %s WHERE id_produit = %s;",
+						String queryNewQuantity = String.format("UPDATE produit SET stock_total_produit = %s WHERE id_produit ='%s';",
 								newquantity,
 								recievedProtocol.getOptionsElement(0)
 						);
@@ -320,7 +320,7 @@ public class ThreadsConnectionHandler extends Thread{
 			/*
 			 * verify if the produc id exist 
 			 */
-			String queryExist = String.format("SELECT COUNT(*) AS count FROM produit Where id_produit=%s;",
+			String queryExist = String.format("SELECT COUNT(*) AS count FROM produit Where id_produit='%s';",
 					recievedProtocol.getOptionsElement(0)
 			);
 			ResultSet exist=databaseManager.executeSelectQuery(queryExist)  ;
@@ -347,6 +347,104 @@ public class ThreadsConnectionHandler extends Thread{
 				logger.error(errormessage);	
 				return ProtocolFactory.createErrorProtocol("le produit n'a  pas pus être supprimer  cause : impossible de se connecter a la base de données");
 			}
+	}
+	/**
+	 * function use went the order is finish 
+	 * @param recievedProtocol
+	 * @return  echec or success protocol
+	 */
+	public Protocol queryValidOrder(Protocol recievedProtocol) {
+		try {
+			/*
+			 * verify if the order  id exist 
+			 */
+			String queryExist = String.format("SELECT COUNT(*) AS count FROM commande Where id_commande='%s';",
+					recievedProtocol.getOptionsElement(0)
+			);
+			ResultSet exist=databaseManager.executeSelectQuery(queryExist)  ;
+			exist.next();
+			int count = exist.getInt("count");
+			//if different from 1, we didn't found the id of produc 
+			if(count != 1) {
+				logger.error("wrong cause : invalid id command  ");	
+				return ProtocolFactory.createErrorProtocol(" la commande n'a pas été trouver  n'a pas été trouver ");
+			}else {
+				String queryDeleteOrder = String.format("DELETE FROM commande WHERE id_commande='%s';",
+						recievedProtocol.getOptionsElement(0)
+				);
+				databaseManager.executeDmlQuery(queryDeleteOrder);
+				return ProtocolFactory.createSuccessProtocol();
+			}
+		}catch(SQLException ex) { // vérifier l'execption 
+			ex.printStackTrace();
+			String errormessage=ex.getMessage() ;
+			logger.error(errormessage);	
+			return ProtocolFactory.createErrorProtocol("le produit n'a  pas pus être supprimer  cause : impossible de se connecter a la base de données");
+		}
+	}
+	/**
+	 * function for add new employe using only for admin
+	 * @param recievedProtocol
+	 * @return  echec or success protocol
+	 */
+	public Protocol queryAddEmploye(Protocol recievedProtocol) {
+		try {
+			/*
+			 * verify if the order  id exist 
+			 */
+			String queryExist = String.format("SELECT COUNT(*) AS count FROM Employe Where nom_employe='%s';",
+					recievedProtocol.getOptionsElement(0)
+			);
+			ResultSet exist=databaseManager.executeSelectQuery(queryExist)  ;
+			exist.next();
+			int count = exist.getInt("count");
+			//if different from 1, we didn't found the id of produc 
+			if(count != 1) {
+				logger.error("wrong cause : have a employe with this name  ");	
+				return ProtocolFactory.createErrorProtocol(" il y a déja un employer ayant ce nom ");
+			}else {
+				String queryNewEmploye = String.format("INSERT INTO Employe (nom_employe,mot_de_passe_Employe) VALUES('%s','%s');",
+						recievedProtocol.getOptionsElement(0),
+						recievedProtocol.getOptionsElement(1)
+				);
+				databaseManager.executeDmlQuery(queryNewEmploye);
+				return ProtocolFactory.createSuccessProtocol();
+			}
+		}catch(SQLException ex) { // vérifier l'execption 
+			ex.printStackTrace();
+			String errormessage=ex.getMessage() ;
+			logger.error(errormessage);	
+			return ProtocolFactory.createErrorProtocol("le produit n'a  pas pus être supprimer  cause : impossible de se connecter a la base de données");
+		}
+	}
+	public Protocol queryDeleteEmploye(Protocol recievedProtocol) {
+		try {
+			/*
+			 * verify if the order  id exist 
+			 */
+			String queryExist = String.format("SELECT COUNT(*) AS count FROM Employe Where nom_employe='%s';",
+					recievedProtocol.getOptionsElement(0)
+			);
+			ResultSet exist=databaseManager.executeSelectQuery(queryExist)  ;
+			exist.next();
+			int count = exist.getInt("count");
+			//if different from 1, we didn't found the id of produc 
+			if(count != 1) {
+				logger.error("wrong cause : doesn't have a employe with this name  ");	
+				return ProtocolFactory.createErrorProtocol(" il n'y a pas d'employer de ce nom ");
+			}else {
+				String queryDeleteEmploye = String.format("DELETE FROM Employe WHERE nom_employe='%s';",
+						recievedProtocol.getOptionsElement(0)
+				);
+				databaseManager.executeDmlQuery(queryDeleteEmploye);
+				return ProtocolFactory.createSuccessProtocol();
+			}
+		}catch(SQLException ex) { // vérifier l'execption 
+			ex.printStackTrace();
+			String errormessage=ex.getMessage() ;
+			logger.error(errormessage);	
+			return ProtocolFactory.createErrorProtocol("le produit n'a  pas pus être supprimer  cause : impossible de se connecter a la base de données");
+		}
 	}
 	
 }

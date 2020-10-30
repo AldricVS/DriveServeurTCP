@@ -214,11 +214,32 @@ public class ClientThread extends Thread {
 					logger.error("error for delete product ");
 				}
 			break;	
-			
+			case VALIDATE_ORDER:
+				if(verifyAttributNumber(1,recievedProtocol )) {
+					return handler.queryValidOrder(recievedProtocol);
+				}else {
+					logger.error("error for valid order  ");
+				}
+				break;
+			case ADD_NEW_EMPLOYE :
+				if(verifyAttributNumber(2,recievedProtocol )) {
+					return handler.queryAddEmploye(recievedProtocol);
+				}else {
+					logger.error("error for add Employe  ");
+				}
+			break;
+			case DELTE_NEW_EMPLOYE :
+				if(verifyAttributNumber(1,recievedProtocol )) {
+					return handler.queryDeleteEmploye(recievedProtocol);
+				}else {
+					logger.error("error for delete Employe  ");
+				}
+			break;
 		}
 		
 		return null;
 	}
+	
 	/**
 	 * method use for verify if the number of attribute is right 
 	 * @param nbAttribut
