@@ -288,7 +288,7 @@ public class ThreadsConnectionHandler extends Thread{
 				 * addition the quantity in db and the addquantity
 				 */
 				int realquantity = quantity.getInt("stock_total_produit");
-				int newquantity =addquantity-realquantity;
+				int newquantity =realquantity-addquantity;
 					if((newquantity >0) || (newquantity<1000)) {
 						String queryNewQuantity = String.format("UPDATE produit SET stock_total_produit = %s WHERE id_produit ='%s';",
 								newquantity,
@@ -314,13 +314,14 @@ public class ThreadsConnectionHandler extends Thread{
 	 *  function for delete a product on the table 
 	 * @param recievedProtocol
 	 * @return echec or success protocol
+	 * TODO supprimer le produit favoris avant 
 	 */
 	public Protocol queryRemoveProduc(Protocol recievedProtocol) {
 		try {
 			/*
 			 * verify if the produc id exist 
 			 */
-			String queryExist = String.format("SELECT COUNT(*) AS count FROM produit Where id_produit='%s';",
+			String queryExist = String.format("SELECT COUNT(*) AS count FROM produit Where id_produit='%s' CASCADE ;",
 					recievedProtocol.getOptionsElement(0)
 			);
 			ResultSet exist=databaseManager.executeSelectQuery(queryExist)  ;
@@ -352,6 +353,7 @@ public class ThreadsConnectionHandler extends Thread{
 	 * function use went the order is finish 
 	 * @param recievedProtocol
 	 * @return  echec or success protocol
+	 *TODO supprimer les produits commander 
 	 */
 	public Protocol queryValidOrder(Protocol recievedProtocol) {
 		try {
@@ -369,7 +371,7 @@ public class ThreadsConnectionHandler extends Thread{
 				logger.error("wrong cause : invalid id command  ");	
 				return ProtocolFactory.createErrorProtocol(" la commande n'a pas été trouver  n'a pas été trouver ");
 			}else {
-				String queryDeleteOrder = String.format("DELETE FROM commande WHERE id_commande='%s';",
+				String queryDeleteOrder = String.format("DELETE FROM commande WHERE id_commande='%s' CASCADE;",
 						recievedProtocol.getOptionsElement(0)
 				);
 				databaseManager.executeDmlQuery(queryDeleteOrder);
@@ -386,6 +388,7 @@ public class ThreadsConnectionHandler extends Thread{
 	 * function for add new employe using only for admin
 	 * @param recievedProtocol
 	 * @return  echec or success protocol
+	 * TODO verification admin ajouter en param admin 
 	 */
 	public Protocol queryAddEmploye(Protocol recievedProtocol) {
 		try {
@@ -395,11 +398,12 @@ public class ThreadsConnectionHandler extends Thread{
 			String queryExist = String.format("SELECT COUNT(*) AS count FROM Employe Where nom_employe='%s';",
 					recievedProtocol.getOptionsElement(0)
 			);
+	
 			ResultSet exist=databaseManager.executeSelectQuery(queryExist)  ;
 			exist.next();
 			int count = exist.getInt("count");
 			//if different from 1, we didn't found the id of produc 
-			if(count != 1) {
+			if(count != 0) {
 				logger.error("wrong cause : have a employe with this name  ");	
 				return ProtocolFactory.createErrorProtocol(" il y a déja un employer ayant ce nom ");
 			}else {
