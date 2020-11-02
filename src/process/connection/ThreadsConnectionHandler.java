@@ -202,7 +202,7 @@ public class ThreadsConnectionHandler extends Thread{
 	 * @param recievedProtocol
 	 * @return succes or ehec protocol
 	 */
-	public Protocol queryAddProducQuantity(Protocol recievedProtocol) {
+	public Protocol queryAddProductQuantity(Protocol recievedProtocol) {
 		try {
 			/*
 			 * verify if the produc id exist 
@@ -259,7 +259,7 @@ public class ThreadsConnectionHandler extends Thread{
 	 * @param recievedProtocol
 	 * @return succes or echec protocol 
 	 */
-	public Protocol queryRemoveProducQuantity(Protocol recievedProtocol) {
+	public Protocol queryRemoveProductQuantity(Protocol recievedProtocol) {
 		try {
 			/*
 			 * verify if the produc id exist 
@@ -316,7 +316,7 @@ public class ThreadsConnectionHandler extends Thread{
 	 * @return echec or success protocol
 	 * TODO supprimer le produit favoris avant 
 	 */
-	public Protocol queryRemoveProduc(Protocol recievedProtocol) {
+	public Protocol queryRemoveProduct(Protocol recievedProtocol) {
 		try {
 			/*
 			 * verify if the produc id exist 
@@ -387,10 +387,14 @@ public class ThreadsConnectionHandler extends Thread{
 	/**
 	 * function for add new employe using only for admin
 	 * @param recievedProtocol
-	 * @return  echec or success protocol
-	 * TODO verification admin ajouter en param admin 
+	 * @param userAsking the user who want to do this. It must be an administrator in order to do this operation
+	 * @return a protocol permiting to the client to now if the operation is a success or not.
 	 */
-	public Protocol queryAddEmploye(Protocol recievedProtocol) {
+	public Protocol queryAddEmploye(Protocol recievedProtocol, User userAsking) {
+		//first, we want to check if user is admin or not
+		if(!userAsking.isAdmin()) {
+			return ProtocolFactory.createErrorProtocol("Vous n'êtes pas un administrateur, vous n'êtes donc pas autorisés à faire ceci.");
+		}
 		try {
 			/*
 			 * verify if the order  id exist 
@@ -418,7 +422,7 @@ public class ThreadsConnectionHandler extends Thread{
 			ex.printStackTrace();
 			String errormessage=ex.getMessage() ;
 			logger.error(errormessage);	
-			return ProtocolFactory.createErrorProtocol("le produit n'a  pas pus être supprimer  cause : impossible de se connecter a la base de données");
+			return ProtocolFactory.createErrorProtocol("le produit n'a  pas pus être supprimer cause : impossible de se connecter a la base de données");
 		}
 	}
 	public Protocol queryDeleteEmploye(Protocol recievedProtocol) {

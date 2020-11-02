@@ -65,3 +65,4 @@ INFO main process.database.DatabaseManager - Database connected !
 INFO main process.connection.ThreadsConnectionHandler - Server waiting for clients on port 5000
 INFO Thread-0 process.connection.ThreadsConnectionHandler - New client connected
 INFO Thread-2 process.connection.ClientThread - michel is now connected.
+ERROR Thread-2 process.connection.ClientThread - Communication loss with client : Connection reset

@@ -144,6 +144,12 @@ public class ClientThread extends Thread {
 		}
 	}
 
+	/**
+	 * Send the first protocol of the connection. If all succeded, the user attribute is initialized
+	 * @param inputMessage the message recevied by the client
+	 * @return the protocol to send back to server
+	 * @throws InvalidProtocolException
+	 */
 	private Protocol sendConnectionQuery(String inputMessage) throws InvalidProtocolException{
 		ProtocolExtractor extractor = new ProtocolExtractor(inputMessage);
 		
@@ -172,7 +178,7 @@ public class ClientThread extends Thread {
 	}
 	
 	/**
-	 * Main method handling all queries from client to server
+	 * Main method handling all queries from client to server.
 	 * @param recievedProtocol the protocol recieved from client
 	 * @return the answer to send to client
 	 */
@@ -195,21 +201,21 @@ public class ClientThread extends Thread {
 			break;	
 			case ADD_PRODUCT_QUANTITY :
 				if(verifyAttributNumber(2,recievedProtocol )) {
-					return handler.queryAddProducQuantity(recievedProtocol);
+					return handler.queryAddProductQuantity(recievedProtocol);
 				}else {
 					logger.error("error for update product price ");
 				}
 			break;
 			case REMOVE_PRODUCT_QUANTITY :
 				if(verifyAttributNumber(2,recievedProtocol )) {
-					return handler.queryRemoveProducQuantity(recievedProtocol);
+					return handler.queryRemoveProductQuantity(recievedProtocol);
 				}else {
 					logger.error("error for update product price ");
 				}
 			break;
 			case REMOVE_PRODUCT_DEFINITELY :
 				if(verifyAttributNumber(1,recievedProtocol )) {
-					return handler.queryRemoveProduc(recievedProtocol);
+					return handler.queryRemoveProduct(recievedProtocol);
 				}else {
 					logger.error("error for delete product ");
 				}
@@ -223,7 +229,7 @@ public class ClientThread extends Thread {
 				break;
 			case ADD_NEW_EMPLOYE :
 				if(verifyAttributNumber(2,recievedProtocol )) {
-					return handler.queryAddEmploye(recievedProtocol);
+					return handler.queryAddEmploye(recievedProtocol, user);
 				}else {
 					logger.error("error for add Employe  ");
 				}
@@ -235,6 +241,9 @@ public class ClientThread extends Thread {
 					logger.error("error for delete Employe  ");
 				}
 			break;
+			
+			default:
+				return ProtocolFactory.createErrorProtocol("L'action demandée n'est pas reconnue par le serveur");
 		}
 		
 		return null;
