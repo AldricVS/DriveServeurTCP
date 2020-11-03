@@ -87,13 +87,30 @@ public class ThreadsConnectionHandler extends Thread{
 	}
 
 	public Protocol queryConnectionDatabase(String login, String password, boolean isAdmin) {
-		String query = String.format("SELECT COUNT(*) AS count FROM %s WHERE nom_employe = '%s' AND mot_de_passe_Employe = '%s';",
-				isAdmin ? "administrateur" : "employe",
-				login,
-				password);
+		ResultSet result = null;
+		try {
+			Connection connection = databaseManager.getConnection();
+			PreparedStatement preparedStatement;
+			if(isAdmin) {
+				preparedStatement = connection.prepareStatement("SELECT COUNT(*) AS count FROM administrateur WHERE nom_employe=? AND mot_de_passe_Employe=?");
+			}else {
+				preparedStatement = connection.prepareStatement("SELECT COUNT(*) AS count FROM employe WHERE nom_employe=? AND mot_de_passe_Employe=?");
+			}
+			preparedStatement.setString(1, login);
+			preparedStatement.setString(2, password);
+			result = preparedStatement.executeQuery();
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+//		String query = String.format("SELECT COUNT(*) AS count FROM %s WHERE nom_employe = '%s' AND mot_de_passe_Employe = '%s';",
+//				isAdmin ? "administrateur" : "employe",
+//				login,
+//				password);
 		
 		try {
-			ResultSet result = databaseManager.executeSelectQuery(query);
+			//ResultSet result = databaseManager.executeSelectQuery(query);
 			//get the number returned
 			result.next();
 			int count = result.getInt("count");

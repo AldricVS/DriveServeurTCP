@@ -34,6 +34,10 @@ public class DatabaseManager {
 		logger.info("Database connected !");
 	}
 	
+	public Connection getConnection() {
+		return connection;
+	}
+	
 	/**
 	 * Permits to execute a single query and get result.
 	 * @param query the query to execute 
