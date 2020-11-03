@@ -75,42 +75,29 @@ public class ThreadsConnectionHandler extends Thread{
 				clientThread.start();
 				String message = "New client connected";
 				logger.info(message);
-				System.out.println(message);
 			} catch (IOException e) {
 				//error happened, stop communications
 				String errorMessage = "Error while listening for new clients : " + e.getMessage();
 				logger.error(errorMessage);
-				System.err.println(errorMessage);
 				isListening = false;
 			}
 		}
 	}
 
 	public Protocol queryConnectionDatabase(String login, String password, boolean isAdmin) {
-		ResultSet result = null;
 		try {
-			Connection connection = databaseManager.getConnection();
-			PreparedStatement preparedStatement;
+			ResultSet result;
+			//the select will not be done in the same table if client is admin or not
 			if(isAdmin) {
-				preparedStatement = connection.prepareStatement("SELECT COUNT(*) AS count FROM administrateur WHERE nom_employe=? AND mot_de_passe_Employe=?");
+				result = databaseManager.executeSelectQueryParams(
+						"SELECT COUNT(*) AS count FROM administrateur WHERE nom_employe=? AND mot_de_passe_employe=?",
+						login, password);
 			}else {
-				preparedStatement = connection.prepareStatement("SELECT COUNT(*) AS count FROM employe WHERE nom_employe=? AND mot_de_passe_Employe=?");
+				result = databaseManager.executeSelectQueryParams(
+						"SELECT COUNT(*) AS count FROM employe WHERE nom_employe=? AND mot_de_passe_employe=?",
+						login, password);
 			}
-			preparedStatement.setString(1, login);
-			preparedStatement.setString(2, password);
-			result = preparedStatement.executeQuery();
-		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
-//		String query = String.format("SELECT COUNT(*) AS count FROM %s WHERE nom_employe = '%s' AND mot_de_passe_Employe = '%s';",
-//				isAdmin ? "administrateur" : "employe",
-//				login,
-//				password);
-		
-		try {
-			//ResultSet result = databaseManager.executeSelectQuery(query);
+			
 			//get the number returned
 			result.next();
 			int count = result.getInt("count");
@@ -121,10 +108,14 @@ public class ThreadsConnectionHandler extends Thread{
 				return ProtocolFactory.createSuccessProtocol();
 			}
 			
-		} catch (SQLException e) {
+		}catch(IllegalArgumentException e) {
+			logger.error("Error while preparing statement : " + e.getMessage());
+			//should never happen in normal circumstances
+			return ProtocolFactory.createErrorProtocol("La requête envoyée a un problème de coception. Nous ne pouvons pas accéder à votre requête pour l'instant");
+			
+		}catch (SQLException e) {
 			String errorMessage = "Error while communicating with database : " + e.getMessage();
 			logger.error(errorMessage);
-			System.err.println(errorMessage);
 			//we will send to client an error message
 			return ProtocolFactory.createErrorProtocol("Erreur lors de la communication avec la base de données.");
 		}

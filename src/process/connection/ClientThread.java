@@ -33,6 +33,7 @@ public class ClientThread extends Thread {
 	private User user;
 
 	private Socket clientSocket;
+	private boolean isListening = true;
 
 	/**
 	 * We keep trace of the handler of all clients thread in order to call his
@@ -72,28 +73,28 @@ public class ClientThread extends Thread {
 			try {
 				protocolToSend = sendConnectionQuery(inputMessage);
 			} catch (InvalidProtocolException e) {
-				protocolToSend = ProtocolFactory.createErrorProtocol("Le message envoyé n'est pas valide pour le serveur.");
+				protocolToSend = ProtocolFactory.createErrorProtocol("Le message envoyé n'est pas valide pour le serveur. Il est attendu un message de connexion.");
 				String errorMessage = "Connection message is not valid : " + e.getMessage();
 				ClientThread.logger.warn(errorMessage);
-				System.err.println(errorMessage);
-				return;
+				isListening = false;
 			}
 			//send protocol message to client
 			outputFlow.println(protocolToSend.toString());
 			
 			//check if action code of protocol is SUCESS, in this case, we can continue the communication
 			if(protocolToSend.getActionCode() != ActionCodes.SUCESS) {
-				return;
+				isListening = false;
+				logger.info("Client not connected. reason : " + protocolToSend.getOptionsElement(0));
+			}else {
+				//here, user is created, so we can add it to the list
+				handler.addUser(user);
+				ClientThread.logger.info(user.getName() + " is now connected.");
 			}
-			
-			//here, user is created, so we can add it to the list
-			handler.addUser(user);
-			ClientThread.logger.info(user.getName() + " is now connected.");
 			
 			/**
 			 * Main loop where thread will be when connected
 			 */
-			while(true) {
+			while(isListening) {
 				/* Get the message from user, extract the protocol from it and check what client want with the action code.
 				 * If the user send protocol with code DISCONNECT, we get out the loop (we also get out of it if client suddently disconnects).
 				 */
@@ -123,25 +124,32 @@ public class ClientThread extends Thread {
 				
 			}
 			
-			inputFlow.close();
-			outputFlow.close();
-			clientSocket.close();
-			
 		} catch (SocketException e) {
 			// if we are here, it probably means that client has not disconnected properly
 			String errorMessage = "Communication loss with client : " + e.getMessage();
 			ClientThread.logger.error(errorMessage);
-			System.err.println(errorMessage);
 		} catch (IOException e) {
 			String errorMessage = "Error while communicating with client : " + e.getMessage();
 			ClientThread.logger.error(errorMessage);
-			System.err.println(errorMessage);
 		} finally {
 			//we have to remove this user from the list before exiting
 			if(user != null) {
 				handler.removeUser(user);
 			}
+			closeConnection();
 		}
+	}
+	
+	private void closeConnection() {
+		logger.info("Client disconnected.");
+		try {
+			inputFlow.close();
+			outputFlow.close();
+			clientSocket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}	
+		
 	}
 
 	/**
