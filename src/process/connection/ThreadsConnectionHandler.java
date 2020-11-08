@@ -321,15 +321,14 @@ public class ThreadsConnectionHandler extends Thread{
 	/**
 	 *  function for delete a product on the table 
 	 * @param recievedProtocol
-	 * @return echec or success protocol
-	 * TODO supprimer le produit favoris avant 
+	 * @return echec or success protocol 
 	 */
 	public Protocol queryRemoveProduct(Protocol recievedProtocol) {
 		try {
 			/*
 			 * verify if the produc id exist 
 			 */
-			String queryExist = String.format("SELECT COUNT(*) AS count FROM produit Where id_produit='%s' CASCADE ;",
+			String queryExist = String.format("SELECT COUNT(*) AS count FROM produit Where id_produit='%s' ;",
 					recievedProtocol.getOptionsElement(0)
 			);
 			ResultSet exist=databaseManager.executeSelectQuery(queryExist)  ;
@@ -342,10 +341,15 @@ public class ThreadsConnectionHandler extends Thread{
 			}else {
 				/*
 				 * delete de product
+				 * delte produit ins favorit table before produit table
 				 */
+				String queryDeleteProductfav = String.format("DELETE FROM Favori WHERE id_produit='%s';",
+						recievedProtocol.getOptionsElement(0)
+						);
 						String queryDeleteProduct = String.format("DELETE FROM produit WHERE id_produit='%s';",
 								recievedProtocol.getOptionsElement(0)
 						);
+						databaseManager.executeDmlQuery(queryDeleteProductfav);
 						databaseManager.executeDmlQuery(queryDeleteProduct);
 						return  ProtocolFactory.createSuccessProtocol();
 			}
@@ -361,7 +365,6 @@ public class ThreadsConnectionHandler extends Thread{
 	 * function use went the order is finish 
 	 * @param recievedProtocol
 	 * @return  echec or success protocol
-	 *TODO supprimer les produits commander 
 	 */
 	public Protocol queryValidOrder(Protocol recievedProtocol) {
 		try {
@@ -379,9 +382,14 @@ public class ThreadsConnectionHandler extends Thread{
 				logger.error("wrong cause : invalid id command  ");	
 				return ProtocolFactory.createErrorProtocol(" la commande n'a pas été trouver  n'a pas été trouver ");
 			}else {
-				String queryDeleteOrder = String.format("DELETE FROM commande WHERE id_commande='%s' CASCADE;",
+
+				String queryDeleteCommande = String.format("DELETE FROM Produit_commande WHERE id_commande='%s';",
 						recievedProtocol.getOptionsElement(0)
 				);
+				String queryDeleteOrder = String.format("DELETE FROM commande WHERE id_commande='%s' ;",
+						recievedProtocol.getOptionsElement(0)
+				);
+				databaseManager.executeDmlQuery(queryDeleteCommande);
 				databaseManager.executeDmlQuery(queryDeleteOrder);
 				return ProtocolFactory.createSuccessProtocol();
 			}
@@ -462,5 +470,45 @@ public class ThreadsConnectionHandler extends Thread{
 			return ProtocolFactory.createErrorProtocol("le produit n'a  pas pus être supprimer  cause : impossible de se connecter a la base de données");
 		}
 	}
-	
+	/**
+	 * function use for seen all product
+	 * @param recievedProtocol
+	 * @return the list of product on protocol 
+	 * @TODO  finir la fonction
+	 * 
+	 */
+	Protocol queryListProduct(Protocol recievedProtocol) {
+		try {
+			ResultSet list;
+		String listquery = "select produit.id_produit,nom_produit,prix_produit,stock_total_produit,prix_promotion  from produit,Promotion;";
+		list= databaseManager.executeSelectQuery(listquery);
+		
+		int nbColumb= list.getMetaData().getColumnCount();
+		/*
+		 * pas finit 
+		 */
+		if(!list.next()) {
+			System.out.println("pas de data");
+		}else {
+			System.out.println("sa marche");
+		}
+		while(list.next()) {
+			//for (int i=1; i< nbColumb;i++) {
+					System.out.println(list.gets);
+		//	}
+		
+		}
+
+		
+		
+		return recievedProtocol;
+		}catch(SQLException ex){			
+		ex.printStackTrace();
+		String errormessage=ex.getMessage() ;
+		logger.error(errormessage);	
+		return ProtocolFactory.createErrorProtocol("on n'a pas pus afficher la liste des produit");
+			
+		}
+		
+	}
 }

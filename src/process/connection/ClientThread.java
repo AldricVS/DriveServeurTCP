@@ -249,7 +249,14 @@ public class ClientThread extends Thread {
 					logger.error("error for delete Employe  ");
 				}
 			break;
-			
+			case GET_PRODUCT_LIST :
+				
+				if(verifyAttributNumber(0,recievedProtocol )) {
+					return handler.queryListProduct(recievedProtocol);
+				}else {
+					logger.error("error for send list of product  ");
+				}
+			break;
 			default:
 				return ProtocolFactory.createErrorProtocol("L'action demandée n'est pas reconnue par le serveur");
 		}
