@@ -1,5 +1,7 @@
 package process.protocol;
 
+import java.util.List;
+
 import data.Protocol;
 import data.enums.ActionCodes;
 
@@ -26,5 +28,18 @@ public class ProtocolFactory {
 	public static Protocol createSuccessProtocol() {
 		return new Protocol(ActionCodes.SUCESS);
 	}
-
+	/**
+	 * 
+	 * @param list
+	 * @return protocol for send a list 
+	 */
+	public static Protocol listProtocol(List<String> list) {
+		  Protocol protocol = new Protocol(ActionCodes.SUCESS);
+		  //on a besoin du nombre d'items en premier 
+		  protocol.appendOption(Integer.toString(list.size()));
+		  for(String item : list){
+		    protocol.appendOption(item);
+		  }
+		  return protocol;
+	}
 }

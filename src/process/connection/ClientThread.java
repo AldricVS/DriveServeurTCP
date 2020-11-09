@@ -243,8 +243,8 @@ public class ClientThread extends Thread {
 				}
 			break;
 			case REMOVE_EMPLOYE :
-				if(verifyAttributNumber(1,recievedProtocol )) {
-					return handler.queryDeleteEmploye(recievedProtocol);
+				if(verifyAttributNumber(2,recievedProtocol )) {
+					return handler.queryDeleteEmploye(recievedProtocol, user);
 				}else {
 					logger.error("error for delete Employe  ");
 				}
@@ -255,6 +255,21 @@ public class ClientThread extends Thread {
 					return handler.queryListProduct(recievedProtocol);
 				}else {
 					logger.error("error for send list of product  ");
+				}
+			break;
+			case 	GET_ORDER_LIST :
+				if(verifyAttributNumber(0,recievedProtocol )) {
+					return handler.queryListOrder(recievedProtocol);
+				}else {
+					logger.error("error for send list of Order ");
+				}
+				
+			break;
+			case GET_EMPLOYEE_LIST :
+				if(verifyAttributNumber(0,recievedProtocol )) {
+					return handler.queryListEmploye(recievedProtocol,user);
+				}else {
+					logger.error("error for send list of employe ");
 				}
 			break;
 			default:

@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 
 import data.Protocol;
 import data.User;
+import data.enums.ActionCodes;
 import logger.LoggerUtility;
 import process.database.DatabaseManager;
 import process.protocol.ProtocolFactory;
@@ -441,7 +442,11 @@ public class ThreadsConnectionHandler extends Thread{
 			return ProtocolFactory.createErrorProtocol("le produit n'a  pas pus être supprimer cause : impossible de se connecter a la base de données");
 		}
 	}
-	public Protocol queryDeleteEmploye(Protocol recievedProtocol) {
+	public Protocol queryDeleteEmploye(Protocol recievedProtocol,User userAsking ) {
+		//first, we want to check if user is admin or not
+		if(!userAsking.isAdmin()) {
+			return ProtocolFactory.createErrorProtocol("Vous n'êtes pas un administrateur, vous n'êtes donc pas autorisés à faire ceci.");
+		}
 		try {
 			/*
 			 * verify if the order  id exist 
@@ -474,41 +479,83 @@ public class ThreadsConnectionHandler extends Thread{
 	 * function use for seen all product
 	 * @param recievedProtocol
 	 * @return the list of product on protocol 
-	 * @TODO  finir la fonction
 	 * 
 	 */
 	Protocol queryListProduct(Protocol recievedProtocol) {
 		try {
 			ResultSet list;
-		String listquery = "select produit.id_produit,nom_produit,prix_produit,stock_total_produit,prix_promotion  from produit,Promotion;";
+		String listquery = "select produit.id_produit,nom_produit,prix_produit,stock_total_produit,prix_promotion  from produit LEFT OUTER JOIN promotion on produit.id_produit = promotion.id_produit;";
 		list= databaseManager.executeSelectQuery(listquery);
-		
-		int nbColumb= list.getMetaData().getColumnCount();
-		/*
-		 * pas finit 
-		 */
-		if(!list.next()) {
-			System.out.println("pas de data");
-		}else {
-			System.out.println("sa marche");
-		}
+		// create a list for insert product
+		List<String> listProduct = new ArrayList<String>();
 		while(list.next()) {
-			//for (int i=1; i< nbColumb;i++) {
-					System.out.println(list.gets);
-		//	}
-		
-		}
+					listProduct.add(list.getString(1)+";"+list.getString(2)+";"+list.getString(3)+";"+list.getString(4)+";"+list.getString(5));
+					
 
-		
-		
-		return recievedProtocol;
+		}
+		return ProtocolFactory.listProtocol(listProduct);
 		}catch(SQLException ex){			
 		ex.printStackTrace();
 		String errormessage=ex.getMessage() ;
 		logger.error(errormessage);	
 		return ProtocolFactory.createErrorProtocol("on n'a pas pus afficher la liste des produit");
+		
 			
 		}
 		
 	}
+	/**
+	 * 
+	 * @param recievedProtocol
+	 * @return the list of order  on protocol 
+	 */
+	Protocol queryListOrder( Protocol recievedProtocol) {
+		try {
+			ResultSet list;
+		String listquery = "select * from commande;";
+		list= databaseManager.executeSelectQuery(listquery);
+		// create a list for insert product
+		List<String> listOrder = new ArrayList<String>();
+		while(list.next()) {
+					listOrder.add(list.getString(1)+";"+list.getString(2)+";"+list.getString(3)+";"+list.getString(4)+";"+list.getString(5));
+					
+
+		}
+		return ProtocolFactory.listProtocol(listOrder);
+		}catch(SQLException ex){			
+		ex.printStackTrace();
+		String errormessage=ex.getMessage() ;
+		logger.error(errormessage);	
+		return ProtocolFactory.createErrorProtocol("on n'a pas pus afficher la liste des commandes");
+
+		}
+		
+
+	}
+		Protocol queryListEmploye(Protocol recievedProtocol, User userAsking) {
+			//first, we want to check if user is admin or not
+			if(!userAsking.isAdmin()) {
+				return ProtocolFactory.createErrorProtocol("Vous n'êtes pas un administrateur, vous n'êtes donc pas autorisés à faire ceci.");
+			}
+			try {
+				ResultSet list;
+				String listquery = "select * from Employe;";
+				list= databaseManager.executeSelectQuery(listquery);
+				// create a list for insert product
+				List<String> listEmploye = new ArrayList<String>();
+				while(list.next()) {
+							listEmploye.add(list.getString(1)+";"+list.getString(2)+";"+list.getString(3));
+							
+				}
+				return ProtocolFactory.listProtocol(listEmploye);
+			
+			}catch(SQLException ex) { // vérifier l'execption 
+				ex.printStackTrace();
+				String errormessage=ex.getMessage() ;
+				logger.error(errormessage);	
+				return ProtocolFactory.createErrorProtocol("on n'a pas pus afficher les employee");
+			}
+		}
+	
+	
 }
