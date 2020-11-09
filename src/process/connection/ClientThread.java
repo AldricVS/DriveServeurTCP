@@ -235,14 +235,14 @@ public class ClientThread extends Thread {
 					logger.error("error for valid order  ");
 				}
 				break;
-			case ADD_NEW_EMPLOYE :
+			case ADD_EMPLOYE :
 				if(verifyAttributNumber(2,recievedProtocol )) {
 					return handler.queryAddEmploye(recievedProtocol, user);
 				}else {
 					logger.error("error for add Employe  ");
 				}
 			break;
-			case DELTE_NEW_EMPLOYE :
+			case REMOVE_EMPLOYE :
 				if(verifyAttributNumber(1,recievedProtocol )) {
 					return handler.queryDeleteEmploye(recievedProtocol);
 				}else {
