@@ -512,20 +512,25 @@ public class ThreadsConnectionHandler extends Thread{
 	Protocol queryListOrder( Protocol recievedProtocol) {
 		try {
 			ResultSet list;
-		String listquery = "select * from commande;";
-		list= databaseManager.executeSelectQuery(listquery);
-		// create a list for insert product
-		List<String> listOrder = new ArrayList<String>();
-		while(list.next()) {
-					listOrder.add(list.getString(1)+";"+list.getString(2)+";"+list.getString(3)+";"+list.getString(4)+";"+list.getString(5));
-					
-
-		}
-		return ProtocolFactory.listProtocol(listOrder);
+			String listquery = "select * from commande;";
+			list = databaseManager.executeSelectQuery(listquery);
+			// create a list for insert product
+			List<String> listOrder = new ArrayList<String>();
+			while(list.next()) {
+				//get total price
+				String queryTotalPrice = "SELECT SUM(prix_total_commande) FROM produit_commande WHERE id_commande = "+list.getString(1);
+				ResultSet totalPrice = databaseManager.executeSelectQuery(queryTotalPrice);
+				if (!totalPrice.next()) {
+					throw new SQLException("Impossible de calculer le prix de la commande");
+				}
+				listOrder.add(list.getString(1)+";"+list.getString(2)+";"+list.getString(3)+";"+list.getString(4)+";"+list.getString(5)+";"+totalPrice.getString(1));
+				logger.info(listOrder.toString());
+			}
+			return ProtocolFactory.listProtocol(listOrder);
 		}catch(SQLException ex){			
-		ex.printStackTrace();
-		String errormessage=ex.getMessage() ;
-		logger.error(errormessage);	
+			ex.printStackTrace();
+			String errormessage=ex.getMessage() ;
+			logger.error(errormessage);	
 		return ProtocolFactory.createErrorProtocol("on n'a pas pus afficher la liste des commandes");
 
 		}
