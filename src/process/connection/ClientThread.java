@@ -272,11 +272,12 @@ public class ClientThread extends Thread {
 					logger.error("error for send list of employe ");
 				}
 			break;
-			default:
-				return ProtocolFactory.createErrorProtocol("L'action demandée n'est pas reconnue par le serveur");
+		default:
+			//skip over to send error protocol
+			break;
 		}
 		
-		return null;
+		return ProtocolFactory.createErrorProtocol("L'action demandée n'est pas reconnue par le serveur");
 	}
 	
 	/**
