@@ -272,12 +272,33 @@ public class ClientThread extends Thread {
 					logger.error("error for send list of employe ");
 				}
 			break;
-		default:
-			//skip over to send error protocol
+			case APPLY_PROMOTION :
+				if(verifyAttributNumber(2,recievedProtocol )) {
+					return handler.queryApplyPromotion(recievedProtocol);
+				}else {
+					logger.error("error for apply promotion ");
+				}
 			break;
+			case REMOVE_PROMOTION :
+				if(verifyAttributNumber(1,recievedProtocol )) {
+					return handler.queryRemovePromotion(recievedProtocol);
+				}else {
+					logger.error("error for removed  promotion ");
+				}
+			break;
+			case DELETE_ORDER :
+				if(verifyAttributNumber(1,recievedProtocol )) {
+					return handler.queryRemoveOrder(recievedProtocol);
+				}else {
+					logger.error("error for removed order ");
+				}
+			break;
+			
+			default:
+				return ProtocolFactory.createErrorProtocol("L'action demandée n'est pas reconnue par le serveur");
 		}
 		
-		return ProtocolFactory.createErrorProtocol("L'action demandée n'est pas reconnue par le serveur");
+		return null;
 	}
 	
 	/**

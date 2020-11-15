@@ -23,6 +23,7 @@ import process.protocol.ProtocolFactory;
 /**
  * Main class of the server : it will wait for new clients connecting and create threads for newcommers.
  * @author Aldric Vitali Silvestre <aldric.vitali@outlook.fr>
+ * @author D'Urso Raphaël <rdurso@outlook.fr>
  */
 public class ThreadsConnectionHandler extends Thread{
 	private static Logger logger = LoggerUtility.getLogger(ThreadsConnectionHandler.class, LoggerUtility.LOG_PREFERENCE);
@@ -84,7 +85,10 @@ public class ThreadsConnectionHandler extends Thread{
 			}
 		}
 	}
-
+	/*
+	 * 
+	 * @todo faire une actualisation de la connection 
+	 */
 	public Protocol queryConnectionDatabase(String login, String password, boolean isAdmin) {
 		try {
 			ResultSet result;
@@ -153,10 +157,9 @@ public class ThreadsConnectionHandler extends Thread{
 		/*
 		 * verify if the produc  exist 
 		 */
-		String queryExist = String.format("SELECT COUNT(*) AS count FROM produit Where nom_produit='%s';",
-				recievedProtocol.getOptionsElement(0)
-		);
-		ResultSet exist=databaseManager.executeSelectQuery(queryExist)  ;
+
+		ResultSet exist=databaseManager.executeSelectQueryParams("SELECT COUNT(*) AS count FROM produit Where nom_produit=?"
+				,recievedProtocol.getOptionsElement(0)) ;
 		exist.next();
 		int count = exist.getInt("count");
 		//if different from 1, we didn't found the id of produc 
@@ -179,13 +182,18 @@ public class ThreadsConnectionHandler extends Thread{
 						/*
 						 * prepare the SQL resquest fpr BD 
 						 */
-						String query = String.format("INSERT INTO produit (nom_produit,prix_produit,stock_total_produit) VALUES('%s',%s,%s);",
-								recievedProtocol.getOptionsElement(0),
+						boolean query;
+							query = databaseManager.executeDmlQueryParams("INSERT INTO produit (nom_produit,prix_produit,stock_total_produit) VALUES(?,?,?)",
+									recievedProtocol.getOptionsElement(0),
 								price,
 								quantity
 						);
-						databaseManager.executeDmlQuery(query);
-						return  ProtocolFactory.createSuccessProtocol();
+							if(query) {
+								return  ProtocolFactory.createSuccessProtocol();
+							}else {
+								return ProtocolFactory.createErrorProtocol("n'a pas pus ajouter le produit");
+							}
+						
 					}else {
 						logger.error("wrong cause : invalid quantity ");	
 						return ProtocolFactory.createErrorProtocol("le produit n'est pas ajouter cause : la quantité n'est pas possible  ");
@@ -216,10 +224,9 @@ public class ThreadsConnectionHandler extends Thread{
 			/*
 			 * verify if the produc id exist 
 			 */
-			String queryExist = String.format("SELECT COUNT(*) AS count FROM produit Where id_produit='%s';",
-					recievedProtocol.getOptionsElement(0)
-			);
-			ResultSet exist=databaseManager.executeSelectQuery(queryExist)  ;
+
+			ResultSet exist=databaseManager.executeSelectQueryParams("SELECT COUNT(*) AS count FROM produit Where id_produit=?"
+					,Integer.parseInt(recievedProtocol.getOptionsElement(0)))  ;
 			exist.next();
 			int count = exist.getInt("count");
 			//if different from 1, we didn't found the id of produc 
@@ -231,10 +238,8 @@ public class ThreadsConnectionHandler extends Thread{
 				 * verify the  quantity of stock is under 1000 and superior of 0
 				 */
 				int addquantity= Integer.parseInt(recievedProtocol.getOptionsElement(1));
-				String queryQuantity = String.format("SELECT  stock_total_produit FROM produit Where id_produit='%s';",
-						recievedProtocol.getOptionsElement(0)
-				);
-				ResultSet quantity=databaseManager.executeSelectQuery(queryQuantity)  ;
+				ResultSet quantity=databaseManager.executeSelectQueryParams("SELECT  stock_total_produit FROM produit Where id_produit=?"
+						,Integer.parseInt(recievedProtocol.getOptionsElement(0)))  ;
 				quantity.next();
 				/*
 				 * addition the quantity in db and the addquantity
@@ -242,12 +247,17 @@ public class ThreadsConnectionHandler extends Thread{
 				int realquantity = quantity.getInt("stock_total_produit");
 				int newquantity =addquantity+realquantity;
 					if((newquantity >0) || (newquantity<1000)) {
-						String queryNewQuantity = String.format("UPDATE produit SET stock_total_produit = %s WHERE id_produit = '%s';",
-								newquantity,
-								recievedProtocol.getOptionsElement(0)
-						);
-						databaseManager.executeDmlQuery(queryNewQuantity);
-						return  ProtocolFactory.createSuccessProtocol();
+
+						Boolean querynewquantity;
+							querynewquantity=databaseManager.executeDmlQueryParams("UPDATE produit SET stock_total_produit = %s WHERE id_produit =?"
+									,newquantity
+									,Integer.parseInt(recievedProtocol.getOptionsElement(0)));
+						if(querynewquantity) {
+							return  ProtocolFactory.createSuccessProtocol();
+						}else {
+							return ProtocolFactory.createErrorProtocol("on n'a pas pus changer la quantité");
+						}
+						
 					}else {
 						logger.error("wrong cause : invalid price  ");	
 						return ProtocolFactory.createErrorProtocol(" le prix n'est pas possible  ");
@@ -273,10 +283,9 @@ public class ThreadsConnectionHandler extends Thread{
 			/*
 			 * verify if the produc id exist 
 			 */
-			String queryExist = String.format("SELECT COUNT(*) AS count FROM produit Where id_produit='%s';",
-					recievedProtocol.getOptionsElement(0)
-			);
-			ResultSet exist=databaseManager.executeSelectQuery(queryExist)  ;
+
+			ResultSet exist=databaseManager.executeSelectQueryParams("SELECT COUNT(*) AS count FROM produit Where id_produit=?"
+					,Integer.parseInt(recievedProtocol.getOptionsElement(0)));
 			exist.next();
 			int count = exist.getInt("count");
 			//if different from 1, we didn't found the id of produc 
@@ -288,10 +297,8 @@ public class ThreadsConnectionHandler extends Thread{
 				 * verify the  quantity of stock is under 1000 and superior of 0
 				 */
 				int addquantity= Integer.parseInt(recievedProtocol.getOptionsElement(1));
-				String queryQuantity = String.format("SELECT  stock_total_produit FROM produit Where id_produit='%s';",
-						recievedProtocol.getOptionsElement(0)
-				);
-				ResultSet quantity=databaseManager.executeSelectQuery(queryQuantity)  ;
+				ResultSet quantity=databaseManager.executeSelectQueryParams("SELECT  stock_total_produit FROM produit Where id_produit=?"
+						,Integer.parseInt(recievedProtocol.getOptionsElement(0)))  ;
 				quantity.next();
 				/*
 				 * addition the quantity in db and the addquantity
@@ -299,12 +306,17 @@ public class ThreadsConnectionHandler extends Thread{
 				int realquantity = quantity.getInt("stock_total_produit");
 				int newquantity =realquantity-addquantity;
 					if((newquantity >0) || (newquantity<1000)) {
-						String queryNewQuantity = String.format("UPDATE produit SET stock_total_produit = %s WHERE id_produit ='%s';",
-								newquantity,
-								recievedProtocol.getOptionsElement(0)
-						);
-						databaseManager.executeDmlQuery(queryNewQuantity);
-						return  ProtocolFactory.createSuccessProtocol();
+
+						Boolean removeQuantity;
+						removeQuantity=databaseManager.executeDmlQueryParams("UPDATE produit SET stock_total_produit = %s WHERE id_produit =?"
+								,newquantity
+								,Integer.parseInt(recievedProtocol.getOptionsElement(0)));
+						if(removeQuantity) {
+							return  ProtocolFactory.createSuccessProtocol();
+						}else {
+							return ProtocolFactory.createErrorProtocol("on n'a pas pus retirer la quantite demander");
+						}
+						
 					}else {
 						logger.error("wrong cause : invalid price  ");	
 						return ProtocolFactory.createErrorProtocol(" le prix n'est pas possible  ");
@@ -316,23 +328,22 @@ public class ThreadsConnectionHandler extends Thread{
 				ex.printStackTrace();
 				String errormessage=ex.getMessage() ;
 				logger.error(errormessage);	
-				return ProtocolFactory.createErrorProtocol("le produit n'est pas ajouter cause : impossible de se connecter a la base de données");
+				return ProtocolFactory.createErrorProtocol("le produit n'est pas modifier cause : impossible de se connecter a la base de données");
 			}	
 	}
 	/**
 	 *  function for delete a product on the table 
 	 * @param recievedProtocol
 	 * @return echec or success protocol 
+	 * 
 	 */
 	public Protocol queryRemoveProduct(Protocol recievedProtocol) {
 		try {
 			/*
 			 * verify if the produc id exist 
 			 */
-			String queryExist = String.format("SELECT COUNT(*) AS count FROM produit Where id_produit='%s' ;",
-					recievedProtocol.getOptionsElement(0)
-			);
-			ResultSet exist=databaseManager.executeSelectQuery(queryExist)  ;
+			ResultSet exist=databaseManager.executeSelectQueryParams("SELECT COUNT(*) AS count FROM produit Where id_produit=? "
+					,Integer.parseInt(recievedProtocol.getOptionsElement(0)))  ;
 			exist.next();
 			int count = exist.getInt("count");
 			//if different from 1, we didn't found the id of produc 
@@ -344,15 +355,21 @@ public class ThreadsConnectionHandler extends Thread{
 				 * delete de product
 				 * delte produit ins favorit table before produit table
 				 */
-				String queryDeleteProductfav = String.format("DELETE FROM Favori WHERE id_produit='%s';",
-						recievedProtocol.getOptionsElement(0)
-						);
-						String queryDeleteProduct = String.format("DELETE FROM produit WHERE id_produit='%s';",
-								recievedProtocol.getOptionsElement(0)
-						);
-						databaseManager.executeDmlQuery(queryDeleteProductfav);
-						databaseManager.executeDmlQuery(queryDeleteProduct);
-						return  ProtocolFactory.createSuccessProtocol();
+				Boolean deleteProduct;
+
+				deleteProduct=databaseManager.executeDmlQueryParams("DELETE FROM Favori WHERE id_produit=?"
+						,Integer.parseInt(recievedProtocol.getOptionsElement(0)) );
+				deleteProduct=databaseManager.executeDmlQueryParams("DELETE FROM promotion WHERE id_produit=?"
+						,Integer.parseInt(recievedProtocol.getOptionsElement(0)));
+
+					deleteProduct=databaseManager.executeDmlQueryParams("DELETE FROM produit WHERE id_produit=?"
+							,Integer.parseInt(recievedProtocol.getOptionsElement(0)));
+					if(deleteProduct) {
+						return ProtocolFactory.createSuccessProtocol();
+					}else {
+						return ProtocolFactory.createErrorProtocol("on n'a pas pus supprimer le produit");
+					}
+
 			}
 				
 			}catch(SQLException ex) { // vérifier l'execption 
@@ -372,10 +389,9 @@ public class ThreadsConnectionHandler extends Thread{
 			/*
 			 * verify if the order  id exist 
 			 */
-			String queryExist = String.format("SELECT COUNT(*) AS count FROM commande Where id_commande='%s';",
-					recievedProtocol.getOptionsElement(0)
-			);
-			ResultSet exist=databaseManager.executeSelectQuery(queryExist)  ;
+
+			ResultSet exist=databaseManager.executeSelectQueryParams("SELECT COUNT(*) AS count FROM commande Where id_commande=?"
+					,Integer.parseInt(recievedProtocol.getOptionsElement(0)));
 			exist.next();
 			int count = exist.getInt("count");
 			//if different from 1, we didn't found the id of produc 
@@ -383,22 +399,26 @@ public class ThreadsConnectionHandler extends Thread{
 				logger.error("wrong cause : invalid id command  ");	
 				return ProtocolFactory.createErrorProtocol(" la commande n'a pas été trouver  n'a pas été trouver ");
 			}else {
-
-				String queryDeleteCommande = String.format("DELETE FROM Produit_commande WHERE id_commande='%s';",
-						recievedProtocol.getOptionsElement(0)
-				);
-				String queryDeleteOrder = String.format("DELETE FROM commande WHERE id_commande='%s' ;",
-						recievedProtocol.getOptionsElement(0)
-				);
-				databaseManager.executeDmlQuery(queryDeleteCommande);
-				databaseManager.executeDmlQuery(queryDeleteOrder);
-				return ProtocolFactory.createSuccessProtocol();
+					Boolean queryDelete;
+					queryDelete=databaseManager.executeDmlQueryParams("DELETE FROM Produit_commande WHERE id_commande=?"
+							,Integer.parseInt(recievedProtocol.getOptionsElement(0)));
+					if(queryDelete) {
+						queryDelete=databaseManager.executeDmlQueryParams("DELETE FROM commande WHERE id_commande=?"
+								,Integer.parseInt(recievedProtocol.getOptionsElement(0)));
+						if(queryDelete) {
+							return ProtocolFactory.createSuccessProtocol();
+						}else {
+							return ProtocolFactory.createErrorProtocol("on n'a pas pus facilité  la commande");
+						}
+					}else {
+						return ProtocolFactory.createErrorProtocol("on n'a pas supprimer les produit commander ");
+					}
 			}
 		}catch(SQLException ex) { // vérifier l'execption 
 			ex.printStackTrace();
 			String errormessage=ex.getMessage() ;
 			logger.error(errormessage);	
-			return ProtocolFactory.createErrorProtocol("le produit n'a  pas pus être supprimer  cause : impossible de se connecter a la base de données");
+			return ProtocolFactory.createErrorProtocol("la commande n'a pas pus être valider  cause : impossible de se connecter a la base de données");
 		}
 	}
 	/**
@@ -406,6 +426,7 @@ public class ThreadsConnectionHandler extends Thread{
 	 * @param recievedProtocol
 	 * @param userAsking the user who want to do this. It must be an administrator in order to do this operation
 	 * @return a protocol permiting to the client to now if the operation is a success or not.
+
 	 */
 	public Protocol queryAddEmploye(Protocol recievedProtocol, User userAsking) {
 		//first, we want to check if user is admin or not
@@ -416,11 +437,9 @@ public class ThreadsConnectionHandler extends Thread{
 			/*
 			 * verify if the order  id exist 
 			 */
-			String queryExist = String.format("SELECT COUNT(*) AS count FROM Employe Where nom_employe='%s';",
-					recievedProtocol.getOptionsElement(0)
-			);
 	
-			ResultSet exist=databaseManager.executeSelectQuery(queryExist)  ;
+			ResultSet exist=databaseManager.executeSelectQueryParams("SELECT COUNT(*) AS count FROM Employe Where nom_employe=?"
+					,Integer.parseInt(recievedProtocol.getOptionsElement(0)));
 			exist.next();
 			int count = exist.getInt("count");
 			//if different from 1, we didn't found the id of produc 
@@ -428,20 +447,30 @@ public class ThreadsConnectionHandler extends Thread{
 				logger.error("wrong cause : have a employe with this name  ");	
 				return ProtocolFactory.createErrorProtocol(" il y a déja un employer ayant ce nom ");
 			}else {
-				String queryNewEmploye = String.format("INSERT INTO Employe (nom_employe,mot_de_passe_Employe) VALUES('%s','%s');",
-						recievedProtocol.getOptionsElement(0),
-						recievedProtocol.getOptionsElement(1)
-				);
-				databaseManager.executeDmlQuery(queryNewEmploye);
-				return ProtocolFactory.createSuccessProtocol();
+				Boolean newEmploye;
+				newEmploye=databaseManager.executeDmlQueryParams("INSERT INTO Employe (nom_employe,mot_de_passe_Employe) VALUES(?,?)"
+						,recievedProtocol.getOptionsElement(0)
+						,recievedProtocol.getOptionsElement(1));
+				if(newEmploye) {
+					return ProtocolFactory.createSuccessProtocol();
+				}else {
+					return ProtocolFactory.createErrorProtocol("on n'a pas pus ajouter le nouvelle employer");
+				}
+				
 			}
 		}catch(SQLException ex) { // vérifier l'execption 
 			ex.printStackTrace();
 			String errormessage=ex.getMessage() ;
 			logger.error(errormessage);	
-			return ProtocolFactory.createErrorProtocol("le produit n'a  pas pus être supprimer cause : impossible de se connecter a la base de données");
+			return ProtocolFactory.createErrorProtocol("l'employer  n'a  pas pus être ajouter  cause : impossible de se connecter a la base de données");
 		}
 	}
+	/**
+	 * 
+	 * @param recievedProtocol
+	 * @param userAsking
+	 * @return echec or sucess protocol
+	 */
 	public Protocol queryDeleteEmploye(Protocol recievedProtocol,User userAsking ) {
 		//first, we want to check if user is admin or not
 		if(!userAsking.isAdmin()) {
@@ -451,10 +480,9 @@ public class ThreadsConnectionHandler extends Thread{
 			/*
 			 * verify if the order  id exist 
 			 */
-			String queryExist = String.format("SELECT COUNT(*) AS count FROM Employe Where nom_employe='%s';",
-					recievedProtocol.getOptionsElement(0)
-			);
-			ResultSet exist=databaseManager.executeSelectQuery(queryExist)  ;
+
+			ResultSet exist=databaseManager.executeSelectQueryParams("SELECT COUNT(*) AS count FROM Employe Where nom_employe=?"
+					,Integer.parseInt(recievedProtocol.getOptionsElement(0)));
 			exist.next();
 			int count = exist.getInt("count");
 			//if different from 1, we didn't found the id of produc 
@@ -462,30 +490,37 @@ public class ThreadsConnectionHandler extends Thread{
 				logger.error("wrong cause : doesn't have a employe with this name  ");	
 				return ProtocolFactory.createErrorProtocol(" il n'y a pas d'employer de ce nom ");
 			}else {
-				String queryDeleteEmploye = String.format("DELETE FROM Employe WHERE nom_employe='%s';",
-						recievedProtocol.getOptionsElement(0)
-				);
-				databaseManager.executeDmlQuery(queryDeleteEmploye);
-				return ProtocolFactory.createSuccessProtocol();
+				Boolean deleteEmploye;
+
+				deleteEmploye=databaseManager.executeDmlQueryParams("DELETE FROM Employe WHERE nom_employe=?"
+						,Integer.parseInt(recievedProtocol.getOptionsElement(0)));
+				if(deleteEmploye) {
+					return ProtocolFactory.createSuccessProtocol();
+				}else {
+					return ProtocolFactory.createSuccessProtocol();
+				}
+				
 			}
 		}catch(SQLException ex) { // vérifier l'execption 
 			ex.printStackTrace();
 			String errormessage=ex.getMessage() ;
 			logger.error(errormessage);	
-			return ProtocolFactory.createErrorProtocol("le produit n'a  pas pus être supprimer  cause : impossible de se connecter a la base de données");
+			return ProtocolFactory.createErrorProtocol("l'employer n'a  pas pus être supprimer  cause : impossible de se connecter a la base de données");
 		}
 	}
+	
+	
+	
+	
 	/**
 	 * function use for seen all product
 	 * @param recievedProtocol
 	 * @return the list of product on protocol 
-	 * 
 	 */
 	Protocol queryListProduct(Protocol recievedProtocol) {
 		try {
 			ResultSet list;
-		String listquery = "select produit.id_produit,nom_produit,prix_produit,stock_total_produit,prix_promotion  from produit LEFT OUTER JOIN promotion on produit.id_produit = promotion.id_produit;";
-		list= databaseManager.executeSelectQuery(listquery);
+		list= databaseManager.executeSelectQuery("select produit.id_produit,nom_produit,prix_produit,stock_total_produit,prix_promotion  from produit LEFT OUTER JOIN promotion on produit.id_produit = promotion.id_produit");
 		// create a list for insert product
 		List<String> listProduct = new ArrayList<String>();
 		while(list.next()) {
@@ -505,38 +540,44 @@ public class ThreadsConnectionHandler extends Thread{
 		
 	}
 	/**
-	 * 
 	 * @param recievedProtocol
 	 * @return the list of order  on protocol 
 	 */
 	Protocol queryListOrder( Protocol recievedProtocol) {
 		try {
 			ResultSet list;
-			String listquery = "select * from commande;";
-			list = databaseManager.executeSelectQuery(listquery);
-			// create a list for insert product
-			List<String> listOrder = new ArrayList<String>();
-			while(list.next()) {
-				//get total price
-				String queryTotalPrice = "SELECT SUM(prix_total_commande) FROM produit_commande WHERE id_commande = "+list.getString(1);
-				ResultSet totalPrice = databaseManager.executeSelectQuery(queryTotalPrice);
-				if (!totalPrice.next()) {
-					throw new SQLException("Impossible de calculer le prix de la commande");
-				}
-				listOrder.add(list.getString(1)+";"+list.getString(2)+";"+list.getString(3)+";"+list.getString(4)+";"+list.getString(5)+";"+totalPrice.getString(1));
-				logger.info(listOrder.toString());
+		list= databaseManager.executeSelectQuery( "select * from commande");
+		// create a list for insert product
+		List<String> listOrder = new ArrayList<String>();
+		while(list.next()) {
+			//get total price
+			String queryTotalPrice = "SELECT SUM(prix_total_commande) FROM produit_commande WHERE id_commande = "+list.getString(1);
+			ResultSet totalPrice = databaseManager.executeSelectQuery(queryTotalPrice);
+			if (!totalPrice.next()) {
+				throw new SQLException("Impossible de calculer le prix de la commande");
 			}
-			return ProtocolFactory.listProtocol(listOrder);
+			listOrder.add(list.getString(1)+";"+list.getString(2)+";"+list.getString(3)+";"+list.getString(4)+";"+list.getString(5)+";"+totalPrice.getString(1));
+			logger.info(listOrder.toString());
+			
+		}
+		return ProtocolFactory.listProtocol(listOrder);
 		}catch(SQLException ex){			
-			ex.printStackTrace();
-			String errormessage=ex.getMessage() ;
-			logger.error(errormessage);	
+		ex.printStackTrace();
+		String errormessage=ex.getMessage() ;
+		logger.error(errormessage);	
 		return ProtocolFactory.createErrorProtocol("on n'a pas pus afficher la liste des commandes");
 
 		}
 		
 
-	}
+	}	
+		/**
+		 * 
+		 * @param recievedProtocol
+		 * @param userAsking
+		 * @return
+		 * @TODO changer les requête SQL
+		 */
 		Protocol queryListEmploye(Protocol recievedProtocol, User userAsking) {
 			//first, we want to check if user is admin or not
 			if(!userAsking.isAdmin()) {
@@ -560,7 +601,165 @@ public class ThreadsConnectionHandler extends Thread{
 				logger.error(errormessage);	
 				return ProtocolFactory.createErrorProtocol("on n'a pas pus afficher les employee");
 			}
+		}		
+		/**
+		 * 
+		 * @param recievedProtocol
+		 * @return protocol for sucess or echec to add promotion 
+		 */
+	Protocol queryApplyPromotion( Protocol recievedProtocol) {
+		try {
+			ResultSet exist;
+			/*
+			 * verify if the produc  exist 
+			 */
+			exist=databaseManager.executeSelectQueryParams(
+					"SELECT COUNT(*) AS count FROM produit Where id_produit=?;"
+					,Integer.parseInt( recievedProtocol.getOptionsElement(0)));
+			exist.next();
+			int count = exist.getInt("count");
+			//if different from 1, we didn't found the id of produc 
+			if(count != 1) {
+				logger.error("wrong cause : invalid id product  ");	
+				return ProtocolFactory.createErrorProtocol(" le produit existe pas   ");
+			}else {
+				/*
+				 * verification of price between 0.1 and 999.99 
+				 */ResultSet realprice;
+				 	realprice=databaseManager.executeSelectQueryParams(
+				 			"SELECT prix_produit	 FROM produit Where id_produit=?;",
+				 			Integer.parseInt( recievedProtocol.getOptionsElement(0))
+				 			);
+				 	BigDecimal promotionPrice= new BigDecimal(recievedProtocol.getOptionsElement(1)) ;
+				 		
+					realprice.next();
+					if(( promotionPrice.compareTo(new BigDecimal(0)))==1 &&  promotionPrice.compareTo(realprice.getBigDecimal(1))==-1) {
+							/*
+							 * prepare the SQL resquest fpr BD 
+							 */
+							Boolean addPromotion;
+							addPromotion=databaseManager.executeDmlQueryParams(
+									"INSERT INTO promotion (id_produit,prix_promotion)  VALUES (?,?)"
+									,Integer.parseInt(recievedProtocol.getOptionsElement(0)),promotionPrice);
+							if(addPromotion) {
+							return  ProtocolFactory.createSuccessProtocol();
+							}else {
+								return  ProtocolFactory.createErrorProtocol("n'a pas pus ajouter cette promotion");
+							}
+					}else {
+						logger.error("wrong cause : invalid price ");	
+						return ProtocolFactory.createErrorProtocol("la promotion  n'est pas ajouter cause : le prix n'est pas valide  ");
+					}
+			
+			}
+		}catch(SQLException ex) { // vérifier l'execption 
+			ex.printStackTrace();
+			String errormessage=ex.getMessage() ;
+			logger.error(errormessage);	
+			return ProtocolFactory.createErrorProtocol("la promotion n'a pas pus être ajouter : impossible de se connecter a la base de données");
 		}
+	}
+	/**
+	 * 
+	 * @param recievedProtocol
+	 * @return echec or sucess protocol
+	 */
+	Protocol queryRemovePromotion(Protocol recievedProtocol) {
+		try {
+			ResultSet exist;
+			/*
+			 * verify if the produc  exist 
+			 */
+			exist=databaseManager.executeSelectQueryParams(
+					"SELECT COUNT(*) AS count FROM promotion Where id_produit=?;"
+					,Integer.parseInt( recievedProtocol.getOptionsElement(0)));
+			exist.next();
+			int count = exist.getInt("count");
+			//if different from 1, we didn't found the id of produc 
+			if(count != 1) {
+				logger.error("wrong cause : invalid id product  ");	
+				return ProtocolFactory.createErrorProtocol(" le produit n'a pas de pormotion   ");
+			}else {
+				/*
+				 * prepare the SQL resquest fpr BD 
+				 */
+				Boolean removePromotion;
+				removePromotion=databaseManager.executeDmlQueryParams(
+						"delete from promotion where id_produit=?"
+						,Integer.parseInt(recievedProtocol.getOptionsElement(0)));
+				if(removePromotion) {
+				return  ProtocolFactory.createSuccessProtocol();
+				}else {
+					return  ProtocolFactory.createErrorProtocol("n'a pas pus supprimer  cette promotion");
+				}
+			}
+	}catch(SQLException ex) { // vérifier l'execption 
+		ex.printStackTrace();
+		String errormessage=ex.getMessage() ;
+		logger.error(errormessage);	
+		return ProtocolFactory.createErrorProtocol("la promotion na pas pus être supprimer  cause : impossible de se connecter a la base de données");
+	}
+	}
 	
-	
+	/**
+	 * 
+	 * @param recievedProtocol
+	 * @return succes or echec protocol 
+	 */
+	Protocol queryRemoveOrder(Protocol recievedProtocol) {
+		try {
+			ResultSet exist;
+			/*
+			 * verify if the produc  exist 
+			 */
+			exist=databaseManager.executeSelectQueryParams(
+					"SELECT COUNT(*) AS count FROM commande Where id_commande=?;"
+					,Integer.parseInt( recievedProtocol.getOptionsElement(0)));
+			exist.next();
+			int count = exist.getInt("count");
+			//if different from 1, we didn't found the id of produc 
+			if(count != 1) {
+				logger.error("wrong cause : invalid id commande  ");	
+				return ProtocolFactory.createErrorProtocol(" la commande existe pas    ");
+			}else {
+				ResultSet orderProduct;
+				boolean deleteProductOrder;
+					orderProduct=databaseManager.executeSelectQueryParams("SELECT id_produit,quantite_commande FROM produit_commande WHERE id_commande=?"
+							,Integer.parseInt(recievedProtocol.getOptionsElement(0)));
+					boolean removeProductOrder;
+					// we add the stock taked by the commande 
+					while(orderProduct.next()) {
+						removeProductOrder=databaseManager.executeDmlQueryParams("UPDATE produit SET stock_total_produit = stock_total_produit + ? WHERE id_produit = ?"
+							,orderProduct.getInt(2)
+							,orderProduct.getInt(1));
+						if(!removeProductOrder) {
+							
+							return ProtocolFactory.createErrorProtocol("on n'a pas pus remettre un produit dans le stock");
+						} 	
+					}
+					// delete de commande from table produit_commander and commande 
+					deleteProductOrder=databaseManager.executeDmlQueryParams("Delete from produit_commande where id_commande=? "
+							,Integer.parseInt( recievedProtocol.getOptionsElement(0)));
+					if(deleteProductOrder) {
+						deleteProductOrder=databaseManager.executeDmlQueryParams("Delete from commande where id_commande=? "
+								,Integer.parseInt( recievedProtocol.getOptionsElement(0)));
+						if(deleteProductOrder) {
+							return ProtocolFactory.createSuccessProtocol();
+						}else {
+							return ProtocolFactory.createErrorProtocol("on n'a pas pus supprimer la commander");	
+						}
+						
+					}else {
+					
+						return ProtocolFactory.createErrorProtocol("on n'a pas pus supprimer les produit commander");
+					}
+
+			}
+			}catch(SQLException ex) { // vérifier l'execpstion 
+				ex.printStackTrace();
+				String errormessage=ex.getMessage() ;
+				logger.error(errormessage);	
+				return ProtocolFactory.createErrorProtocol("la commande  na pas pus être supprimer  cause : impossible de se connecter a la base de données");
+			}
+	}
 }
