@@ -47,6 +47,7 @@ public class DatabaseManager {
 	
 	/**
 	 * Permits to execute a single query and get result.
+	 * @deprecated Security issues (vulnerable to SQL injection for example)
 	 * @param query the query to execute 
 	 * @return what database respond
 	 * @throws SQLException if an error occurs while asking database
@@ -92,6 +93,7 @@ public class DatabaseManager {
 	
 	/**
 	 * Permits to execute query that don't return result.
+	 * @deprecated Security issues (vulnerable to SQL injection for example)
 	 * @param query the query to execute 
 	 * @return true if query has modified something, false else
 	 * @throws SQLException if an error occurs while asking database
