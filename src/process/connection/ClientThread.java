@@ -295,10 +295,11 @@ public class ClientThread extends Thread {
 			break;
 			
 			default:
-				return ProtocolFactory.createErrorProtocol("L'action demandée n'est pas reconnue par le serveur");
+				//skip over to send error protocol
+				break;
 		}
 		
-		return null;
+		return ProtocolFactory.createErrorProtocol("L'action demandée n'est pas reconnue par le serveur");
 	}
 	
 	/**
