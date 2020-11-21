@@ -85,9 +85,10 @@ public class ClientThread extends Thread {
 			if(protocolToSend.getActionCode() != ActionCodes.SUCESS) {
 				isListening = false;
 				logger.info("Client not connected. reason : " + protocolToSend.getOptionsElement(0));
-			}else {
+			} else {
 				//here, user is created, so we can add it to the list
 				handler.addUser(user);
+				handler.updateLastConnexionUser(user);
 				ClientThread.logger.info(user.getName() + " is now connected.");
 			}
 			
@@ -119,6 +120,7 @@ public class ClientThread extends Thread {
 				}else {
 					protocolToSend = askToServer(protocolRecieved);
 				}
+				logger.info(protocolToSend);
 				outputFlow.println(protocolToSend.toString());
 				
 				
@@ -191,7 +193,7 @@ public class ClientThread extends Thread {
 	 * @return the answer to send to client
 	 */
 	private Protocol askToServer(Protocol recievedProtocol) {
-		
+		ClientThread.logger.info(recievedProtocol);
 		switch(recievedProtocol.getActionCode()) {
 
 			case ADD_NEW_PRODUCT  :

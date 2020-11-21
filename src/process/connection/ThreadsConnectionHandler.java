@@ -134,6 +134,13 @@ public class ThreadsConnectionHandler extends Thread{
 		users.remove(user);
 	}
 	
+	public void updateLastConnexionUser (User user) {
+		try {
+			databaseManager.executeSelectQueryParams("UPDATE Employe SET date_derniere_connexion_employe = NOW() WHERE nom_employe = '" + user.getName() + "'");
+		} catch (IllegalArgumentException | SQLException e) {
+			e.printStackTrace();
+		}
+	}
 	/**
 	 * Check if user is already in list
 	 * @param user the user to check
@@ -434,35 +441,31 @@ public class ThreadsConnectionHandler extends Thread{
 			return ProtocolFactory.createErrorProtocol("Vous n'êtes pas un administrateur, vous n'êtes donc pas autorisés à faire ceci.");
 		}
 		try {
-			/*
-			 * verify if the order  id exist 
-			 */
-	
 			ResultSet exist=databaseManager.executeSelectQueryParams("SELECT COUNT(*) AS count FROM Employe Where nom_employe=?"
-					,Integer.parseInt(recievedProtocol.getOptionsElement(0)));
+					, recievedProtocol.getOptionsElement(0));
 			exist.next();
 			int count = exist.getInt("count");
 			//if different from 1, we didn't found the id of produc 
 			if(count != 0) {
 				logger.error("wrong cause : have a employe with this name  ");	
 				return ProtocolFactory.createErrorProtocol(" il y a déja un employer ayant ce nom ");
-			}else {
+			} else {
 				Boolean newEmploye;
 				newEmploye=databaseManager.executeDmlQueryParams("INSERT INTO Employe (nom_employe,mot_de_passe_Employe) VALUES(?,?)"
 						,recievedProtocol.getOptionsElement(0)
 						,recievedProtocol.getOptionsElement(1));
-				if(newEmploye) {
+				if (newEmploye) {
 					return ProtocolFactory.createSuccessProtocol();
-				}else {
+				} else {
 					return ProtocolFactory.createErrorProtocol("on n'a pas pus ajouter le nouvelle employer");
 				}
 				
 			}
-		}catch(SQLException ex) { // vérifier l'execption 
+		} catch(SQLException ex) { // vérifier l'execption 
 			ex.printStackTrace();
-			String errormessage=ex.getMessage() ;
-			logger.error(errormessage);	
-			return ProtocolFactory.createErrorProtocol("l'employer  n'a  pas pus être ajouter  cause : impossible de se connecter a la base de données");
+			String errormessage=ex.getMessage();
+			logger.error(errormessage);
+			return ProtocolFactory.createErrorProtocol("l'employer n'a pas pu être ajouter: impossible de se connecter à la base de donnée");
 		}
 	}
 	/**
@@ -585,21 +588,19 @@ public class ThreadsConnectionHandler extends Thread{
 			}
 			try {
 				ResultSet list;
-				String listquery = "select * from Employe;";
-				list= databaseManager.executeSelectQuery(listquery);
+				String listquery = "select nom_employe from Employe;";
+				list = databaseManager.executeSelectQuery(listquery);
 				// create a list for insert product
 				List<String> listEmploye = new ArrayList<String>();
-				while(list.next()) {
-							listEmploye.add(list.getString(1)+";"+list.getString(2)+";"+list.getString(3));
-							
+				while (list.next()) {
+					listEmploye.add(list.getString(1));
 				}
 				return ProtocolFactory.listProtocol(listEmploye);
-			
-			}catch(SQLException ex) { // vérifier l'execption 
+			} catch(SQLException ex) {  // vérifier l'execption 
 				ex.printStackTrace();
-				String errormessage=ex.getMessage() ;
-				logger.error(errormessage);	
-				return ProtocolFactory.createErrorProtocol("on n'a pas pus afficher les employee");
+				String errormessage = ex.getMessage();
+				logger.error(errormessage);
+				return ProtocolFactory.createErrorProtocol("on n'a pas pu afficher les employés");
 			}
 		}		
 		/**
