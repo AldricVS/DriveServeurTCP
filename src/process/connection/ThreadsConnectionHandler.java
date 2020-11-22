@@ -523,7 +523,7 @@ public class ThreadsConnectionHandler extends Thread{
 	Protocol queryListProduct(Protocol recievedProtocol) {
 		try {
 			ResultSet list;
-		list= databaseManager.executeSelectQuery("select produit.id_produit,nom_produit,prix_produit,stock_total_produit,prix_promotion  from produit LEFT OUTER JOIN promotion on produit.id_produit = promotion.id_produit");
+		list= databaseManager.executeSelectQueryParams("select produit.id_produit,nom_produit,prix_produit,stock_total_produit,prix_promotion  from produit LEFT OUTER JOIN promotion on produit.id_produit = promotion.id_produit");
 		// create a list for insert product
 		List<String> listProduct = new ArrayList<String>();
 		while(list.next()) {
@@ -549,13 +549,14 @@ public class ThreadsConnectionHandler extends Thread{
 	Protocol queryListOrder( Protocol recievedProtocol) {
 		try {
 			ResultSet list;
-		list= databaseManager.executeSelectQuery( "select * from commande");
+		list= databaseManager.executeSelectQueryParams( "select * from commande");
 		// create a list for insert product
 		List<String> listOrder = new ArrayList<String>();
 		while(list.next()) {
 			//get total price
-			String queryTotalPrice = "SELECT SUM(prix_total_commande) FROM produit_commande WHERE id_commande = "+list.getString(1);
-			ResultSet totalPrice = databaseManager.executeSelectQuery(queryTotalPrice);
+			ResultSet totalPrice = databaseManager.executeSelectQueryParams("SELECT SUM(prix_total_commande) FROM produit_commande WHERE id_commande ="
+					,list.getString(1));
+
 			if (!totalPrice.next()) {
 				throw new SQLException("Impossible de calculer le prix de la commande");
 			}
@@ -588,8 +589,7 @@ public class ThreadsConnectionHandler extends Thread{
 			}
 			try {
 				ResultSet list;
-				String listquery = "select nom_employe from Employe;";
-				list = databaseManager.executeSelectQuery(listquery);
+				list = databaseManager.executeSelectQueryParams("select nom_employe from Employe");
 				// create a list for insert product
 				List<String> listEmploye = new ArrayList<String>();
 				while (list.next()) {
@@ -638,6 +638,29 @@ public class ThreadsConnectionHandler extends Thread{
 							/*
 							 * prepare the SQL resquest fpr BD 
 							 */
+						ResultSet promotionexist;
+						/*
+						 * verify if the produc  exist 
+						 */
+						promotionexist=databaseManager.executeSelectQueryParams(
+								"SELECT COUNT(*) AS count FROM produit Where id_produit=?;"
+								,Integer.parseInt( recievedProtocol.getOptionsElement(0)));
+						promotionexist.next();
+						int existP = promotionexist.getInt("count");
+						//if different from 1, we didn't found the id of produc 
+						if(existP == 1) {
+							Boolean addPromotion;
+							addPromotion=databaseManager.executeDmlQueryParams(
+									"UPDATE promotion SET prix_promotion = ? WHERE id_produit =?"									
+									,promotionPrice
+									,Integer.parseInt(recievedProtocol.getOptionsElement(0))
+									);
+							if(addPromotion) {
+							return  ProtocolFactory.createSuccessProtocol();
+							}else {
+								return  ProtocolFactory.createErrorProtocol("n'a pas pus mdofier  cette promotion");
+							}
+						}else {
 							Boolean addPromotion;
 							addPromotion=databaseManager.executeDmlQueryParams(
 									"INSERT INTO promotion (id_produit,prix_promotion)  VALUES (?,?)"
@@ -646,7 +669,8 @@ public class ThreadsConnectionHandler extends Thread{
 							return  ProtocolFactory.createSuccessProtocol();
 							}else {
 								return  ProtocolFactory.createErrorProtocol("n'a pas pus ajouter cette promotion");
-							}
+							}	
+					}
 					}else {
 						logger.error("wrong cause : invalid price ");	
 						return ProtocolFactory.createErrorProtocol("la promotion  n'est pas ajouter cause : le prix n'est pas valide  ");
