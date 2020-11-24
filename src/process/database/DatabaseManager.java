@@ -6,6 +6,7 @@ import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLTimeoutException;
 import java.sql.Statement;
 
 import org.apache.log4j.Logger;
@@ -18,7 +19,8 @@ import logger.LoggerUtility;
  */
 public class DatabaseManager {
 	private static Logger logger = LoggerUtility.getLogger(DatabaseManager.class, LoggerUtility.LOG_PREFERENCE);
-	
+	private final int LOGIN_TIMEOUT = 30;
+	private final int QUERY_TIMEOUT = 30;
 	private Connection connection;
 	
 	/**
@@ -31,6 +33,7 @@ public class DatabaseManager {
 	 */
 	public DatabaseManager(String url, String user, String password) throws SQLException{
 		logger.info("Start connection to " + url);
+		DriverManager.setLoginTimeout(LOGIN_TIMEOUT);
 		connection = DriverManager.getConnection("jdbc:postgresql://" + url, user, password);
 		//if we are here, we are connected
 		logger.info("Database connected !");
@@ -71,7 +74,7 @@ public class DatabaseManager {
 	public ResultSet executeSelectQueryParams(String query, Object... params) throws SQLException, IllegalArgumentException{
 		//we create the prepared statement from the connection and add query
 		PreparedStatement preparedStatement = connection.prepareStatement(query);
-		
+		preparedStatement.setQueryTimeout(QUERY_TIMEOUT);
 		//we have to check if we have the same numbers of params as wanted in the preparedStatement
 		ParameterMetaData parameterMetaData = preparedStatement.getParameterMetaData();
 		if(parameterMetaData.getParameterCount() != params.length) {
@@ -87,8 +90,12 @@ public class DatabaseManager {
 			preparedStatement.setObject(counter, object);
 			counter++;
 		}
-		
-		return preparedStatement.executeQuery();
+		try {
+			return preparedStatement.executeQuery();
+		}catch (SQLTimeoutException e) {
+			logger.error("Query timeouts exceed");
+			throw new SQLException(e);
+		}
 	}
 	
 	/**
@@ -100,7 +107,9 @@ public class DatabaseManager {
 	 */
 	public boolean executeDmlQuery(String query) throws SQLException{
 		Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+		
 		return statement.executeUpdate(query) > 0;
+		
 	}
 	
 	/**
@@ -117,7 +126,7 @@ public class DatabaseManager {
 	public boolean executeDmlQueryParams(String query, Object... params) throws SQLException, IllegalArgumentException{
 		//we create the prepared statement from the connection and add query
 		PreparedStatement preparedStatement = connection.prepareStatement(query);
-		
+		preparedStatement.setQueryTimeout(QUERY_TIMEOUT);
 		//we have to check if we have the same numbers of params as wanted in the preparedStatement
 		ParameterMetaData parameterMetaData = preparedStatement.getParameterMetaData();
 		if(parameterMetaData.getParameterCount() != params.length) {
@@ -133,8 +142,13 @@ public class DatabaseManager {
 			preparedStatement.setObject(counter, object);
 			counter++;
 		}
+		try {
+			return preparedStatement.executeUpdate() > 0;
+		}catch (SQLTimeoutException e) {
+			logger.error("Query timeouts exceed");
+			throw new SQLException(e);
+		}
 		
-		return preparedStatement.executeUpdate() > 0;
 	}
 
 }
