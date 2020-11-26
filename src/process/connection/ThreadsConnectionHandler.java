@@ -147,7 +147,7 @@ public class ThreadsConnectionHandler extends Thread {
 					"UPDATE Employe SET date_derniere_connexion_employe = NOW() WHERE nom_employe = '" + user.getName()
 							+ "'");
 		} catch (IllegalArgumentException | SQLException e) {
-			e.printStackTrace();
+			logger.error("Impossible d'actualiser la dernière connexion de l'employe "+user.getName());
 		}
 	}
 
@@ -415,6 +415,7 @@ public class ThreadsConnectionHandler extends Thread {
 
 				deleteProduct = databaseManager.executeDmlQueryParams("DELETE FROM produit WHERE id_produit=?",
 						Integer.parseInt(recievedProtocol.getOptionsElement(0)));
+				//TODO pourquoi ne pas utiliser CASCADE ?
 				if (deleteProduct) {
 					return ProtocolFactory.createSuccessProtocol();
 				} else {
