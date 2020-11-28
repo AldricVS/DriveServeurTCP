@@ -612,9 +612,81 @@ public class ThreadsConnectionHandler extends Thread {
 			String errormessage = ex.getMessage();
 			logger.error(errormessage);
 			return ProtocolFactory.createErrorProtocol("on n'a pas pus afficher la liste des produit");
-
 		}
-
+	}
+	
+	/**
+	 * function use for seen all product
+	 * 
+	 * @param recievedProtocol
+	 * @return the list of product on protocol
+	 */
+	Protocol queryGetSpecificOrder(Protocol recievedProtocol) {
+		try {
+			int orderId = Integer.parseInt(recievedProtocol.getOptionsElement(0));
+			ResultSet exist = databaseManager.executeSelectQueryParams("SELECT SUM(prix_total_commande) FROM produit_commande WHERE id_commande = ?", orderId);
+			exist.next();
+			BigDecimal totalPrice = exist.getBigDecimal("sum");
+			// if different , we didn't found the id of produc
+			if (totalPrice == null ) {
+				logger.error("Couldn't find a total Price for Order "+orderId);
+				return ProtocolFactory.createErrorProtocol("Impossible de trouver la commande avec l'ID "+ orderId);
+			}
+			else {
+				ResultSet list;
+				list = databaseManager.executeSelectQueryParams(
+						"SELECT produit.id_produit, nom_produit, produit_commande.quantite_commande FROM Produit " + 
+						"INNER JOIN Produit_Commande ON (produit.id_produit = produit_commande.id_produit) " + 
+						"WHERE id_commande = ?", orderId);
+				// create a list to insert data
+				List<String> listOrderProduct = new ArrayList<String>();
+				// add total price
+				listOrderProduct.add(totalPrice.toString());
+				while (list.next()) {
+					listOrderProduct.add(list.getString(1) + ";" + list.getString(2) + ";" + list.getString(3));
+				}
+				return ProtocolFactory.listProtocol(listOrderProduct);
+			}
+		} catch (SQLException ex) {
+			ex.printStackTrace();
+			String errormessage = ex.getMessage();
+			logger.error(errormessage);
+			return ProtocolFactory.createErrorProtocol("Erreur dans la communication avec la Base de Donnée");
+		} catch (NumberFormatException ex) {
+			logger.error("ID number is not valid");
+			return ProtocolFactory.createErrorProtocol("L'ID de la commande n'est pas valide");
+		}
+	}
+	
+	/**
+	 * function use for seen all product
+	 * 
+	 * @param recievedProtocol
+	 * @return the list of product on protocol
+	 */
+	Protocol queryGetSpecificProduct(Protocol recievedProtocol) {
+		try {
+			ResultSet list;
+			list = databaseManager.executeSelectQueryParams(
+					"select produit.id_produit,nom_produit,prix_produit,stock_total_produit,prix_promotion FROM produit LEFT OUTER JOIN promotion on produit.id_produit = promotion.id_produit"
+					+ "WHERE produit.id_produit = ?", recievedProtocol.getOptionsElement(0));
+			// create a list for insert product
+			List<String> listProduct = new ArrayList<String>();
+			while (list.next()) {
+				listProduct.add(list.getString(1) + ";" + list.getString(2) + ";" + list.getString(3) + ";"
+						+ list.getString(4) + ";" + list.getString(5));
+			}
+			if (listProduct.size() != 1) {
+				return ProtocolFactory.createErrorProtocol("Couldn't retrive Product with the id " + recievedProtocol.getOptionsElement(0));
+			}
+			return ProtocolFactory.listProtocol(listProduct);
+		} catch (SQLException ex) {
+			ex.printStackTrace();
+			String errormessage = ex.getMessage();
+			logger.error(errormessage);
+			return ProtocolFactory.createErrorProtocol("on n'a pas pus afficher la liste des produit");
+			
+		}
 	}
 
 	/**
@@ -638,7 +710,6 @@ public class ThreadsConnectionHandler extends Thread {
 				}
 				listOrder.add(list.getString(1) + ";" + list.getString(2) + ";" + list.getString(3) + ";"
 						+ list.getString(4) + ";" + list.getString(5) + ";" + totalPrice.getString(1));
-				logger.info(listOrder.toString());
 
 			}
 			return ProtocolFactory.listProtocol(listOrder);

@@ -261,7 +261,6 @@ public class ClientThread extends Thread {
 			}
 			break;
 		case GET_PRODUCT_LIST:
-
 			if (verifyAttributNumber(0, recievedProtocol)) {
 				return handler.queryListProduct(recievedProtocol);
 			} else {
@@ -283,6 +282,20 @@ public class ClientThread extends Thread {
 				logger.error("error for send list of employe ");
 			}
 			break;
+			case GET_SPECIFIC_ORDER:
+				if (verifyAttributNumber(1, recievedProtocol)) {
+					return handler.queryGetSpecificOrder(recievedProtocol);
+				} else {
+					logger.error("couldn't show the specified order");
+				}
+				break;
+			case GET_SPECIFIC_PRDUCT:
+				if (verifyAttributNumber(1, recievedProtocol)) {
+					return handler.queryGetSpecificProduct(recievedProtocol);
+				} else {
+					logger.error("couldn't show the specified product");
+				}
+				break;
 		case APPLY_PROMOTION:
 			if (verifyAttributNumber(2, recievedProtocol)) {
 				return handler.queryApplyPromotion(recievedProtocol);
