@@ -40,7 +40,7 @@ public class ClientThread extends Thread {
 	/**
 	 * change this constant for modify the delay before a client is disconnected
 	 */
-	private final int IMEOUT_DELAY = 60 * 1000;
+	private final int TIMEOUT_DELAY = 60 * 1000;
 
 	/**
 	 * Change his constant in order to increase buffer size, useful when more
@@ -114,7 +114,7 @@ public class ClientThread extends Thread {
 			/**
 			 * Main loop where thread will be when connected
 			 */
-			clientSocket.setSoTimeout(IMEOUT_DELAY);
+			clientSocket.setSoTimeout(TIMEOUT_DELAY);
 			while (isListening) {
 				/*
 				 * Get the message from user, extract the protocol from it and check what client
@@ -142,7 +142,7 @@ public class ClientThread extends Thread {
 					continue;
 				}
 				// refresh he disconnect delay
-				clientSocket.setSoTimeout(IMEOUT_DELAY);
+				clientSocket.setSoTimeout(TIMEOUT_DELAY);
 
 				// check if protocol has code DISCONNECT
 				Protocol protocolRecieved = extractor.getProtocol();
