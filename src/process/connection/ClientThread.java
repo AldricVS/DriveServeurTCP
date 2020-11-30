@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -35,10 +36,17 @@ public class ClientThread extends Thread {
 
 	private Socket clientSocket;
 	private boolean isListening = true;
-	
+
 	/**
-	 * Change his constant in order to increase buffer size, useful when more products will be stored in database.
-	 * We assume that each field contain in average 70 characters. We add 1 character in order to see if we have a buffer overflow.
+	 * change this constant for modify the delay before a client is disconnected
+	 */
+	private final int IMEOUT_DELAY = 60 * 1000;
+
+	/**
+	 * Change his constant in order to increase buffer size, useful when more
+	 * products will be stored in database. We assume that each field contain in
+	 * average 70 characters. We add 1 character in order to see if we have a buffer
+	 * overflow.
 	 */
 	private static final int BUFFER_SIZE = (70 * 100) + 1;
 	private char[] buffer = new char[BUFFER_SIZE];
@@ -106,22 +114,23 @@ public class ClientThread extends Thread {
 			/**
 			 * Main loop where thread will be when connected
 			 */
-			
+			clientSocket.setSoTimeout(IMEOUT_DELAY);
 			while (isListening) {
 				/*
 				 * Get the message from user, extract the protocol from it and check what client
 				 * want with the action code. If the user send protocol with code DISCONNECT, we
 				 * get out the loop (we also get out of it if client suddently disconnects).
 				 */
-				//inputMessage = inputFlow.readLine();
+				// inputMessage = inputFlow.readLine();
 
 				/**
-				 * Read stream into a buffer, in order to avoid buffer overflow (limit is set with constant BUFFER_SIZE above)
+				 * Read stream into a buffer, in order to avoid buffer overflow (limit is set
+				 * with constant BUFFER_SIZE above)
 				 */
-				//clear used part of the array before reading again
+				// clear used part of the array before reading again
 				Arrays.fill(buffer, 0, numberCharactersRead, '\u0000');
 				numberCharactersRead = inputFlow.read(buffer);
-				
+
 				try {
 					extractor = new ProtocolExtractor(buffer);
 				} catch (InvalidProtocolException e) {
@@ -129,9 +138,11 @@ public class ClientThread extends Thread {
 					// beggining of the loop
 					protocolToSend = ProtocolFactory.createErrorProtocol(e.getMessage());
 					outputFlow.println(protocolToSend.toString());
-					//message is not valid, return to beginning
+					// message is not valid, return to beginning
 					continue;
 				}
+				// refresh he disconnect delay
+				clientSocket.setSoTimeout(IMEOUT_DELAY);
 
 				// check if protocol has code DISCONNECT
 				Protocol protocolRecieved = extractor.getProtocol();
@@ -145,6 +156,9 @@ public class ClientThread extends Thread {
 				outputFlow.println(protocolToSend.toString());
 
 			}
+
+		} catch (SocketTimeoutException ex) {
+			new IOException("Délai d'attente dépassé");
 
 		} catch (SocketException e) {
 			// if we are here, it probably means that client has not disconnected properly
@@ -217,7 +231,7 @@ public class ClientThread extends Thread {
 	 * @return the answer to send to client
 	 */
 	private Protocol askToServer(Protocol recievedProtocol) {
-		//ClientThread.logger.info(recievedProtocol);
+		// ClientThread.logger.info(recievedProtocol);
 		switch (recievedProtocol.getActionCode()) {
 
 		case ADD_NEW_PRODUCT:
@@ -297,20 +311,20 @@ public class ClientThread extends Thread {
 				logger.error("error for send list of employe ");
 			}
 			break;
-			case GET_SPECIFIC_ORDER:
-				if (verifyAttributNumber(1, recievedProtocol)) {
-					return handler.queryGetSpecificOrder(recievedProtocol);
-				} else {
-					logger.error("couldn't show the specified order");
-				}
-				break;
-			case GET_SPECIFIC_PRDUCT:
-				if (verifyAttributNumber(1, recievedProtocol)) {
-					return handler.queryGetSpecificProduct(recievedProtocol);
-				} else {
-					logger.error("couldn't show the specified product");
-				}
-				break;
+		case GET_SPECIFIC_ORDER:
+			if (verifyAttributNumber(1, recievedProtocol)) {
+				return handler.queryGetSpecificOrder(recievedProtocol);
+			} else {
+				logger.error("couldn't show the specified order");
+			}
+			break;
+		case GET_SPECIFIC_PRDUCT:
+			if (verifyAttributNumber(1, recievedProtocol)) {
+				return handler.queryGetSpecificProduct(recievedProtocol);
+			} else {
+				logger.error("couldn't show the specified product");
+			}
+			break;
 		case APPLY_PROMOTION:
 			if (verifyAttributNumber(2, recievedProtocol)) {
 				return handler.queryApplyPromotion(recievedProtocol);
