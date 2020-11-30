@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -34,6 +35,13 @@ public class ClientThread extends Thread {
 
 	private Socket clientSocket;
 	private boolean isListening = true;
+	
+	/**
+	 * Change his constant in order to increase buffer size, useful when more products will be stored in database.
+	 * We assume that each field contain in average 70 characters. We add 1 character in order to see if we have a buffer overflow.
+	 */
+	private static final int BUFFER_SIZE = (70 * 100) + 1;
+	private char[] buffer = new char[BUFFER_SIZE];
 
 	/**
 	 * We keep trace of the handler of all clients thread in order to call his
@@ -61,6 +69,7 @@ public class ClientThread extends Thread {
 	@Override
 	public void run() {
 		try {
+			int numberCharactersRead = 0;
 			inputFlow = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 			outputFlow = new PrintWriter(clientSocket.getOutputStream(), true);
 
@@ -69,9 +78,9 @@ public class ClientThread extends Thread {
 			ProtocolExtractor extractor;
 
 			// first, we must wait for a first message from client :
-			inputMessage = inputFlow.readLine();
+			numberCharactersRead = inputFlow.read(buffer);
 			try {
-				protocolToSend = sendConnectionQuery(inputMessage);
+				protocolToSend = sendConnectionQuery(buffer);
 			} catch (InvalidProtocolException e) {
 				protocolToSend = ProtocolFactory.createErrorProtocol(
 						"Le message envoyé n'est pas valide pour le serveur. Il est attendu un message de connexion.");
@@ -97,24 +106,30 @@ public class ClientThread extends Thread {
 			/**
 			 * Main loop where thread will be when connected
 			 */
+			
 			while (isListening) {
 				/*
 				 * Get the message from user, extract the protocol from it and check what client
 				 * want with the action code. If the user send protocol with code DISCONNECT, we
 				 * get out the loop (we also get out of it if client suddently disconnects).
 				 */
-				inputMessage = inputFlow.readLine();
+				//inputMessage = inputFlow.readLine();
 
+				/**
+				 * Read stream into a buffer, in order to avoid buffer overflow (limit is set with constant BUFFER_SIZE above)
+				 */
+				//clear used part of the array before reading again
+				Arrays.fill(buffer, 0, numberCharactersRead, '\u0000');
+				numberCharactersRead = inputFlow.read(buffer);
+				
 				try {
-					extractor = new ProtocolExtractor(inputMessage);
+					extractor = new ProtocolExtractor(buffer);
 				} catch (InvalidProtocolException e) {
 					// if protocol is invalid, send to client an error message and return at the
 					// beggining of the loop
-					protocolToSend = ProtocolFactory
-							.createErrorProtocol("Le message envoyé n'est pas valide pour le serveur.");
-					outputFlow.println(protocolToSend);
-					String errorMessage = user.getName() + "'s message is not valid : " + e.getMessage();
-					ClientThread.logger.warn(errorMessage);
+					protocolToSend = ProtocolFactory.createErrorProtocol(e.getMessage());
+					outputFlow.println(protocolToSend.toString());
+					//message is not valid, return to beginning
 					continue;
 				}
 
@@ -167,8 +182,8 @@ public class ClientThread extends Thread {
 	 * @return the protocol to send back to server
 	 * @throws InvalidProtocolException
 	 */
-	private Protocol sendConnectionQuery(String inputMessage) throws InvalidProtocolException {
-		ProtocolExtractor extractor = new ProtocolExtractor(inputMessage);
+	private Protocol sendConnectionQuery(char[] message) throws InvalidProtocolException {
+		ProtocolExtractor extractor = new ProtocolExtractor(message);
 
 		// now we can check if message content is valid
 		extractor.assertActionCodeValid(ActionCodes.CONNECTION_ADMIN, ActionCodes.CONNECTION_NORMAL);
@@ -202,7 +217,7 @@ public class ClientThread extends Thread {
 	 * @return the answer to send to client
 	 */
 	private Protocol askToServer(Protocol recievedProtocol) {
-		ClientThread.logger.info(recievedProtocol);
+		//ClientThread.logger.info(recievedProtocol);
 		switch (recievedProtocol.getActionCode()) {
 
 		case ADD_NEW_PRODUCT:

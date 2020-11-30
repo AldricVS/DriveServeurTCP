@@ -4,10 +4,14 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import data.Protocol;
 import data.enums.ActionCodes;
 import exceptions.CodeNotFoundException;
 import exceptions.InvalidProtocolException;
+import logger.LoggerUtility;
+import process.connection.ClientThread;
 
 /**
  * Used when recieve protocol string and need to translate it.
@@ -15,12 +19,34 @@ import exceptions.InvalidProtocolException;
  * @author Aldric
  */
 public class ProtocolExtractor {
+	private static Logger logger = LoggerUtility.getLogger(ProtocolExtractor.class, LoggerUtility.LOG_PREFERENCE);
 
 	private String protocolString;
 	private Protocol protocol;
 
+	/**
+	 * Construct a protocol from a String
+	 * @param protocolString
+	 * @throws InvalidProtocolException
+	 */
 	public ProtocolExtractor(String protocolString) throws InvalidProtocolException{
 		this.protocolString = protocolString;
+		protocol = extract();
+	}
+	
+	/**
+	 * Construct a protocol from a char array. Useful when reading with limited buffer size.
+	 * If the array is full, the InvalidProtocoleException is raised.
+	 * @param protocolCharArray
+	 * @throws InvalidProtocolException
+	 */
+	public ProtocolExtractor(char[] protocolCharArray) throws InvalidProtocolException{
+		//check if last character is terminal, in the other case, raise exception
+		if(protocolCharArray[protocolCharArray.length - 1] != '\u0000') {
+			logger.error("Message recieved too long.");
+			throw new InvalidProtocolException("Le message reçu est trop long.");
+		}
+		this.protocolString = String.valueOf(protocolCharArray);
 		protocol = extract();
 	}
 
@@ -55,7 +81,8 @@ public class ProtocolExtractor {
 			}
 		}
 		//if we are here, it means that we don't have found the code in the parameters list
-		throw new InvalidProtocolException(String.format("Number of options not valid (have %s)", protocolActionCode.name()));
+		logger.error(String.format("Number of options not valid (have %s)", protocolActionCode.name()));
+		throw new InvalidProtocolException("Action non reconnue par le serveur.");
 	}
 	
 	private Protocol extract() throws InvalidProtocolException {
@@ -67,7 +94,8 @@ public class ProtocolExtractor {
 
 		// if no args, we can already say that no code is provided
 		if (args.size() == 0) {
-			throw new InvalidProtocolException("Aucun champ n'a été trouvé dans la chaine");
+			logger.error("No field found in the string");
+			throw new InvalidProtocolException("Aucun champ n'a été trouvé dans le message");
 		}
 		
 		ActionCodes actionCode;
@@ -88,7 +116,7 @@ public class ProtocolExtractor {
 	private List<String> getFields() throws InvalidProtocolException {
 		StringBuilder stringBuilder = new StringBuilder();
 		boolean isInArg = false;
-		LinkedList<String> fields = new LinkedList<String>();
+		ArrayList<String> fields = new ArrayList<String>();
 		/* we will iterate over each character of the string and find all args */
 		for (char c : protocolString.toCharArray()) {
 
@@ -96,7 +124,8 @@ public class ProtocolExtractor {
 			case '<':
 				// if we are parsing an arg, we have a formatting issue in the string
 				if (isInArg) {
-					throw new InvalidProtocolException("Un '<' a été trouvé avant d'avoir trouvé un '>' fermant.");
+					logger.error("'<' found before closing '>'.");
+					throw new InvalidProtocolException("Le message envoyé n'est pas formé correctement.");
 				} else {
 					// else, we will reset the stringBuilder for the next arg
 					isInArg = true;
@@ -107,7 +136,8 @@ public class ProtocolExtractor {
 			case '>':
 				// if we are not parsing an arg, we have a formatting issue in the string
 				if (!isInArg) {
-					throw new InvalidProtocolException("Un '>' a été trouvé avant d'avoir trouvé un '<' ouvrant.");
+					logger.error("'>' found before opening '<'.");
+					throw new InvalidProtocolException("Le message envoyé n'est pas formé correctement.");
 				} else {
 					// else, we will get the content of the string builder and append it to the
 					// result list
@@ -124,7 +154,8 @@ public class ProtocolExtractor {
 		
 		//last test : if isInArg is still true, it means that we didn't close the last field
 		if(isInArg) {
-			throw new InvalidProtocolException("Le dernier '>' n'a pas été trouvé.");
+			logger.error("Last '>' not found.");
+			throw new InvalidProtocolException("Le message envoyé au serveur n'a peut-être pas été envoyé dans sa totalité.");
 		}
 		
 		return fields;
