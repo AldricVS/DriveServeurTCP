@@ -40,7 +40,7 @@ public class ClientThread extends Thread {
 	/**
 	 * change this constant for modify the delay before a client is disconnected
 	 */
-	private final int TIMEOUT_DELAY = 60 * 1000;
+	private final int TIMEOUT_DELAY = 30 * 60 * 1000;
 
 	/**
 	 * Change his constant in order to increase buffer size, useful when more
@@ -158,8 +158,7 @@ public class ClientThread extends Thread {
 			}
 
 		} catch (SocketTimeoutException ex) {
-			new IOException("Délai d'attente dépassé");
-
+			logger.info("User " + user.getName() + " absent for too long, disconection");
 		} catch (SocketException e) {
 			// if we are here, it probably means that client has not disconnected properly
 			String errorMessage = "Communication loss with client : " + e.getMessage();

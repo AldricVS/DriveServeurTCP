@@ -39,8 +39,8 @@ public class ServerTest {
 		 * ); }
 		 */
 		int port = PORT;
-		String databaseUrl = DATABASE_URL_LOCAL;
-		String databaseUser = DATABASE_USER_LOCAL;;
+		String databaseUrl = DATABASE_URL_ONLINE;
+		String databaseUser = DATABASE_USER_ONLINE;
 		String currentElement;
 		boolean isPortSpecified=false;
 		boolean isOnlineSpecified=false;
@@ -50,8 +50,6 @@ public class ServerTest {
 			if(currentElement.equals("-o")) {
 				if(!isOnlineSpecified && !isLocalSpecified) {
 					isOnlineSpecified = true;
-					databaseUrl = DATABASE_URL_ONLINE;
-					databaseUser = DATABASE_USER_ONLINE;
 				}else {
 					System.err.println("Option déja spéficiée");
 					System.exit(-1);
@@ -59,6 +57,8 @@ public class ServerTest {
 			}else if(currentElement.equals("-l")) {
 				if(!isOnlineSpecified && !isLocalSpecified) {
 					isLocalSpecified = true;
+					databaseUrl = DATABASE_URL_LOCAL;
+					databaseUser = DATABASE_URL_LOCAL;
 				}else {
 					System.err.println("Option déja spéficiée");
 					System.exit(-1);
